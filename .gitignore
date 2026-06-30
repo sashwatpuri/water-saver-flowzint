@@ -1,0 +1,40 @@
+# Python (backend)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.env
+.venv
+.pytest_cache/
+.mypy_cache/
+
+# Node (frontend)
+node_modules/
+dist/
+dist-ssr/
+*.local
+.eslintcache
+.stylelintcache
+frontend/.env.local
+frontend/dist/
+
+# Large Datasets & Generated Data
+aquaguard_data.json
+aquaguard_data.csv
+
+# Compiled Models & Plots
+model/
+*.joblib
+*.png
+
+# OS/IDEs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
