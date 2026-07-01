@@ -1,44 +1,170 @@
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
-import AlertBanner from './AlertBanner';
 import MetricCard from './MetricCard';
 import Chart from './Chart';
+import GisMap from './GisMap';
+import SourceAnalysis from './SourceAnalysis';
+import RecommendationsList from './RecommendationsList';
+import SustainabilityScorecard from './SustainabilityScorecard';
+import SensorHealthMonitor from './SensorHealthMonitor';
+import AdminPanel from './AdminPanel';
 import ChatWidget from './ChatWidget';
-import { fetchLatestReadings, fetchSummary } from '../data/api';
+import MlSandbox from './MlSandbox';
+import axios from 'axios';
+import {
+  fetchLocations,
+  fetchLatestReadings,
+  fetchSummary,
+  fetchForecast,
+  fetchSourceAnalysis,
+  fetchRecommendations,
+  fetchSensorHealth,
+  fetchAiInsights,
+  sendChatMessage
+} from '../data/api';
 
-/**
- * Dashboard
- * Root orchestrator. Fetches data on mount, refreshes every 10s.
- * Maps API data → component props.
- */
 export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'sandbox' | 'analytics' | 'telemetry' | 'safety'
+  const [locations, setLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState('Sector A');
   const [readings, setReadings] = useState([]);
-  const [summary,  setSummary]  = useState(null);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState(null);
+  const [summary, setSummary] = useState(null);
+  const [forecast, setForecast] = useState([]);
+  const [sourceData, setSourceData] = useState({ sources: [], explanation: '' });
+  const [recommendations, setRecommendations] = useState([]);
+  const [sensorHealth, setSensorHealth] = useState(null);
+  const [aiInsights, setAiInsights] = useState([]);
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Embedding ChatWidget state in the dashboard grid
+  const [embeddedChat, setEmbeddedChat] = useState([
+    { role: 'assistant', text: 'Ask me anything about EcoSphere\'s monitored sectors, AI forecasts, or active alerts.' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
 
-  const load = async () => {
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+  const loadNetworkData = async () => {
     try {
-      const [latest, sum] = await Promise.all([
-        fetchLatestReadings(),
-        fetchSummary(),
-      ]);
-      setReadings(latest);
-      setSummary(sum);
-      setError(null);
+      const locRes = await fetchLocations();
+      setLocations(locRes.locations);
+      
+      const healthRes = await fetchSensorHealth();
+      setSensorHealth(healthRes);
+      
+      const insightsRes = await fetchAiInsights();
+      setAiInsights(insightsRes);
     } catch (err) {
-      console.error(err);
-      setError('Cannot reach the backend. Make sure the server is running on port 8000.');
-    } finally {
-      setLoading(false);
+      console.error("Error fetching network metadata:", err);
+      setError('Cannot connect to the backend server. Please verify FastAPI is running on port 8000.');
     }
   };
 
+  const loadLocationSpecificData = async (loc) => {
+    try {
+      const [latestReadings, dataSummary, forecastData, sourceAnalysis, recsList] = await Promise.all([
+        fetchLatestReadings(loc),
+        fetchSummary(loc),
+        fetchForecast(loc),
+        fetchSourceAnalysis(loc),
+        fetchRecommendations(loc)
+      ]);
+      
+      setReadings(latestReadings);
+      setSummary(dataSummary);
+      setForecast(forecastData);
+      setSourceData(sourceAnalysis);
+      setRecommendations(recsList);
+    } catch (err) {
+      console.error(`Error loading details for location ${loc}:`, err);
+    }
+  };
+
+  const initLoad = async () => {
+    setLoading(true);
+    await loadNetworkData();
+    await loadLocationSpecificData(selectedLocation);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    load();
-    const id = setInterval(load, 10_000);
-    return () => clearInterval(id);
-  }, []);
+    initLoad();
+    // Poll updates every 8 seconds
+    const interval = setInterval(() => {
+      loadNetworkData();
+      loadLocationSpecificData(selectedLocation);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [selectedLocation]);
+
+  const handleLocationChange = (loc) => {
+    setSelectedLocation(loc);
+  };
+
+  const handleConfigChange = () => {
+    // Admin config toggled, reload location details immediately
+    loadNetworkData();
+    loadLocationSpecificData(selectedLocation);
+  };
+
+  const handleEmbeddedChatSend = async () => {
+    const text = chatInput.trim();
+    if (!text || chatLoading) return;
+    
+    setEmbeddedChat(prev => [...prev, { role: 'user', text }]);
+    setChatInput('');
+    setChatLoading(true);
+    
+    try {
+      const reply = await sendChatMessage(text, selectedLocation);
+      setEmbeddedChat(prev => [...prev, { role: 'assistant', text: reply }]);
+    } catch {
+      setEmbeddedChat(prev => [...prev, { role: 'assistant', text: 'Error communicating with Gemini Core.' }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const handleReportDownload = (reportType, format) => {
+    // Triggers report download directly from FastAPI endpoint
+    const url = `${API_BASE}/api/reports/generate?type=${reportType}&format=${format}&location=${encodeURIComponent(selectedLocation)}`;
+    window.open(url, '_blank');
+  };
+
+  // Compile active alerts checklist dynamically from monitored locations
+  const activeAlerts = [];
+  locations.forEach(loc => {
+    if (loc.aqi_color === 'red') {
+      activeAlerts.push({
+        id: `aqi-crit-${loc.name}`,
+        type: 'Critical',
+        msg: `Critical AQI exceeded 200 (${loc.current_aqi}) at ${loc.name}.`
+      });
+    } else if (loc.aqi_color === 'orange') {
+      activeAlerts.push({
+        id: `aqi-warn-${loc.name}`,
+        type: 'Warning',
+        msg: `PM2.5 / PM10 above WHO limits at ${loc.name}.`
+      });
+    }
+    if (loc.water_status === 'Unsafe/Contaminated') {
+      activeAlerts.push({
+        id: `wqi-crit-${loc.name}`,
+        type: 'Critical',
+        msg: `Reservoir contamination detected at ${loc.name} WQI (${loc.current_wqi}).`
+      });
+    }
+    if (loc.sensor_status === 'OFFLINE') {
+      activeAlerts.push({
+        id: `sen-off-${loc.name}`,
+        type: 'Warning',
+        msg: `IoT Sensor Core offline at ${loc.name}.`
+      });
+    }
+  });
 
   /* ── Loading ── */
   if (loading) {
@@ -46,19 +172,19 @@ export default function Dashboard() {
       <div style={{
         minHeight: '100vh',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexDirection: 'column', gap: 'var(--space-md)',
+        flexDirection: 'column', gap: '16px',
+        backgroundColor: '#0F172A',
+        color: '#94A3B8',
         fontFamily: 'var(--font-sans)',
-        backgroundColor: 'var(--color-light-gray)',
-        color: 'var(--color-text-secondary)',
       }}>
         <div style={{
-          width: '36px', height: '36px',
-          border: '2px solid var(--color-border)',
-          borderTopColor: 'var(--color-ocean-deep)',
+          width: '42px', height: '42px',
+          border: '3px solid #1E293B',
+          borderTopColor: '#38BDF8',
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }} />
-        <div style={{ fontSize: '14px' }}>Loading dashboard…</div>
+        <div style={{ fontSize: '15px', fontWeight: '600' }}>Booting EcoSphere AI Platform…</div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -68,259 +194,554 @@ export default function Dashboard() {
   if (error) {
     return (
       <div style={{
-        maxWidth: '480px', margin: '80px auto',
-        padding: 'var(--space-xl)',
-        backgroundColor: '#fff',
-        border: '1px solid var(--color-border)',
-        borderLeft: '4px solid var(--color-risk)',
-        borderRadius: '8px',
+        maxWidth: '480px', margin: '120px auto',
+        padding: '24px',
+        backgroundColor: '#1E293B',
+        border: '1px solid #334155',
+        borderLeft: '4px solid #EF4444',
+        borderRadius: '12px',
         fontFamily: 'var(--font-sans)',
+        color: '#F8FAFC'
       }}>
-        <div style={{ fontWeight: '600', color: 'var(--color-risk)', marginBottom: '8px' }}>
-          ⚠ Connection Error
+        <div style={{ fontWeight: '700', color: '#EF4444', marginBottom: '8px', fontSize: '16px' }}>
+          ⚠️ Core API Connection Error
         </div>
-        <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
+        <p style={{ fontSize: '13px', color: '#94A3B8', marginBottom: '16px' }}>
           {error}
         </p>
         <button
-          onClick={load}
+          onClick={initLoad}
           style={{
-            padding: '10px 18px', fontSize: '14px', fontWeight: '600',
-            fontFamily: 'var(--font-sans)',
+            padding: '8px 16px', fontSize: '13px', fontWeight: '700',
             border: 'none', borderRadius: '6px', cursor: 'pointer',
-            backgroundColor: 'var(--color-ocean-deep)', color: '#fff',
-            transition: 'background-color 0.12s',
+            backgroundColor: '#38BDF8', color: '#0F172A',
+            transition: 'background-color 0.15s',
           }}
-          onMouseOver={e => e.currentTarget.style.backgroundColor = '#0a2d52'}
-          onMouseOut={e  => e.currentTarget.style.backgroundColor = 'var(--color-ocean-deep)'}
+          onMouseOver={e => e.currentTarget.style.backgroundColor = '#0ea5e9'}
+          onMouseOut={e => e.currentTarget.style.backgroundColor = '#38BDF8'}
         >
-          Retry Connection
+          Re-Establish Link
         </button>
       </div>
     );
   }
 
-  /* ── Derived state ── */
-  const latest = readings.at(-1) ?? null;
+  const latestReading = readings[readings.length - 1] ?? null;
 
-  const violations = [];
-  if (latest) {
-    if (latest.pH < 6.5 || latest.pH > 8.2) violations.push(`pH ${latest.pH.toFixed(2)} (range 6.5–8.2)`);
-    if (latest.TDS > 400)                    violations.push(`TDS ${latest.TDS.toFixed(0)} mg/L (max 400)`);
-    if (latest.DO < 4.5)                     violations.push(`DO ${latest.DO.toFixed(2)} mg/L (min 4.5)`);
-    if (latest.turbidity > 5.0)              violations.push(`Turbidity ${latest.turbidity.toFixed(2)} NTU (max 5.0)`);
-  }
-  const isUnsafe = violations.length > 0;
-  const alertMsg = violations.join('; ') + (violations.length ? '. Immediate review recommended.' : '');
-
-  /* ── Render ── */
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F5F7FA', fontFamily: 'var(--font-sans)' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#F1F5F9', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column' }}>
+      {/* Header Panel */}
+      <Header 
+        lastUpdated={latestReading?.timestamp}
+        selectedLocation={selectedLocation}
+        onSelectLocation={handleLocationChange}
+        locations={locations}
+        activeAlertsCount={activeAlerts.length}
+      />
 
-      <Header lastUpdated={latest?.timestamp} />
+      <div style={{ display: 'flex', flex: 1, position: 'relative' }}>
+        {/* Left Sidebar */}
+        <aside style={{
+          width: '240px',
+          backgroundColor: '#0F172A',
+          color: '#fff',
+          borderRight: '1px solid #1E293B',
+          padding: '24px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          flexShrink: 0
+        }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', paddingLeft: '8px', marginBottom: '8px', letterSpacing: '0.05em' }}>
+            Workspaces
+          </div>
+          {[
+            { id: 'overview', label: '🌍 Overview & GIS Map' },
+            { id: 'sandbox', label: '🧠 ML Model Sandbox' },
+            { id: 'analytics', label: '📊 Telemetry Analytics' },
+            { id: 'telemetry', label: '🎛️ Sensor Database' },
+            { id: 'safety', label: '🚨 Safety & Controls' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 14px',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: '600',
+                transition: 'all 0.15s',
+                backgroundColor: activeTab === tab.id ? '#1E293B' : 'transparent',
+                color: activeTab === tab.id ? '#38BDF8' : '#94A3B8',
+              }}
+              onMouseOver={e => {
+                if (activeTab !== tab.id) {
+                  e.target.style.backgroundColor = '#1E293B';
+                  e.target.style.color = '#F8FAFC';
+                }
+              }}
+              onMouseOut={e => {
+                if (activeTab !== tab.id) {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#94A3B8';
+                }
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
 
-      <main style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: 'var(--space-xl)',
-
-        /* Responsive padding on small screens */
-        paddingLeft: 'clamp(16px, 4vw, 24px)',
-        paddingRight: 'clamp(16px, 4vw, 24px)',
-      }}>
-
-        {/* ── Alert banner ── */}
-        <AlertBanner
-          show={isUnsafe}
-          title="Water Quality Alert — Immediate Action Recommended"
-          message={alertMsg}
-        />
-
-        {/* ── Status summary bar ── */}
-        {summary && (
-          <div style={{
-            backgroundColor: '#fff',
-            border: '1px solid var(--color-border)',
-            borderRadius: '8px',
-            padding: '10px var(--space-lg)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 'var(--space-xl)',
-            flexWrap: 'wrap',
-            gap: 'var(--space-md)',
-          }}>
-            {/* Overall status */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{
-                width: '9px', height: '9px',
-                borderRadius: '50%',
-                backgroundColor: isUnsafe ? 'var(--color-risk)' : 'var(--color-safe)',
-                display: 'inline-block', flexShrink: 0,
-              }} />
-              <span style={{
-                fontSize: '14px', fontWeight: '600',
-                color: isUnsafe ? 'var(--color-risk)' : 'var(--color-safe)',
-              }}>
-                {isUnsafe ? 'Parameters Out of Range' : 'All Parameters Safe'}
-              </span>
+          {/* Collateral system health summary in sidebar */}
+          <div style={{ marginTop: 'auto', borderTop: '1px solid #1E293B', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>SYSTEM STATUS</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#10B981' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }} />
+              API: 127.0.0.1 (Live)
             </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: activeAlerts.length > 0 ? '#EF4444' : '#10B981' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: activeAlerts.length > 0 ? '#EF4444' : '#10B981', display: 'inline-block' }} />
+              {activeAlerts.length > 0 ? `${activeAlerts.length} Active Alert(s)` : 'Systems Nominal'}
+            </div>
+          </div>
+        </aside>
 
-            {/* Mini stats */}
-            <div style={{ display: 'flex', gap: 'var(--space-xl)', flexWrap: 'wrap' }}>
-              {[
-                { label: 'Safe (24h)',   val: summary.safe_readings,   color: 'var(--color-safe)' },
-                { label: 'Unsafe (24h)', val: summary.unsafe_readings, color: 'var(--color-risk)' },
-                { label: 'Avg Temp',     val: `${Number(summary.temperature_avg).toFixed(1)}°C`, color: 'var(--color-text-primary)' },
-              ].map(s => (
-                <div key={s.label} style={{ textAlign: 'center' }}>
-                  <div style={{
-                    fontSize: '16px', fontWeight: '600',
-                    fontFamily: 'var(--font-mono)',
-                    color: s.color, lineHeight: 1,
-                  }}>
-                    {s.val}
-                  </div>
-                  <div style={{
-                    fontSize: '11px', color: 'var(--color-text-secondary)',
-                    marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.05em',
-                  }}>
-                    {s.label}
+        {/* Main Content Workspace */}
+        <main style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto', maxHeight: 'calc(100vh - 70px)' }}>
+          
+          {/* KPI TOP METRICS CARDS (Always visible at the top of every tab, providing continuous situational awareness) */}
+          {latestReading && summary && (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+              gap: '16px'
+            }}>
+              <MetricCard
+                label="Overall Eco Score"
+                value={summary.environmental_score}
+                unit="/100"
+                status={summary.environmental_score >= 75 ? 'SAFE' : 'UNSAFE'}
+                min={75}
+              />
+              <MetricCard
+                label="Air Quality (AQI)"
+                value={latestReading.AQI}
+                unit=""
+                status={latestReading.AQI <= 100 ? 'SAFE' : 'UNSAFE'}
+                max={100}
+              />
+              <MetricCard
+                label="Water Quality"
+                value={latestReading.WQI}
+                unit=""
+                status={latestReading.water_status === 'SAFE' ? 'SAFE' : 'UNSAFE'}
+                min={70}
+              />
+              <MetricCard
+                label="Air Temp"
+                value={latestReading.air_temperature}
+                unit="°C"
+                status="SAFE"
+              />
+              <MetricCard
+                label="Humidity"
+                value={latestReading.humidity}
+                unit="%"
+                status="SAFE"
+              />
+              <MetricCard
+                label="Active Alerts"
+                value={activeAlerts.length}
+                unit="logs"
+                status={activeAlerts.length === 0 ? 'SAFE' : 'UNSAFE'}
+                max={0}
+              />
+            </div>
+          )}
+
+          {/* RENDER ACTIVE TAB */}
+          {activeTab === 'overview' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '24px', flexWrap: 'wrap' }}>
+              {/* Interactive GIS map */}
+              <GisMap 
+                locations={locations} 
+                selectedLocation={selectedLocation} 
+                onSelectLocation={handleLocationChange} 
+              />
+
+              {/* Embedded AI Assistant Chat Panel */}
+              <div style={{
+                backgroundColor: '#fff',
+                border: '1px solid var(--color-border)',
+                borderRadius: '12px',
+                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                height: '520px',
+              }}>
+                <div style={{ backgroundColor: '#0F172A', color: '#fff', padding: '14px 16px', borderBottom: '1px solid #1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>🤖</span>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: '700' }}>AI assistant console</div>
+                    <div style={{ fontSize: '9px', color: '#94A3B8' }}>Inquiry desk for {selectedLocation}</div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Metric cards (4-column responsive grid) ── */}
-        {latest && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: 'var(--space-md)',
-            marginBottom: 'var(--space-xl)',
-          }}>
-            <MetricCard
-              label="pH Level"
-              value={latest.pH}
-              unit=""
-              status={latest.pH >= 6.5 && latest.pH <= 8.2 ? 'SAFE' : 'UNSAFE'}
-              min={6.5} max={8.2}
-            />
-            <MetricCard
-              label="Total Dissolved Solids"
-              value={latest.TDS}
-              unit="mg/L"
-              status={latest.TDS <= 400 ? 'SAFE' : 'UNSAFE'}
-              max={400}
-            />
-            <MetricCard
-              label="Dissolved Oxygen"
-              value={latest.DO}
-              unit="mg/L"
-              status={latest.DO >= 4.5 ? 'SAFE' : 'UNSAFE'}
-              min={4.5}
-            />
-            <MetricCard
-              label="Turbidity"
-              value={latest.turbidity}
-              unit="NTU"
-              status={latest.turbidity <= 5.0 ? 'SAFE' : 'UNSAFE'}
-              max={5.0}
-            />
-          </div>
-        )}
-
-        {/* ── Trend chart ── */}
-        {readings.length > 0 && (
-          <div style={{ marginBottom: 'var(--space-xl)' }}>
-            <Chart data={readings} />
-          </div>
-        )}
-
-        {/* ── 24-hour averages table ── */}
-        {summary && (
-          <div style={{
-            backgroundColor: '#fff',
-            border: '1px solid var(--color-border)',
-            borderRadius: '8px',
-            padding: 'var(--space-lg)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-            overflowX: 'auto',
-          }}>
-            <div style={{
-              fontSize: '15px', fontWeight: '600',
-              color: 'var(--color-text-primary)',
-              marginBottom: 'var(--space-md)',
-            }}>
-              24-Hour Parameter Averages
-            </div>
-
-            <table style={{
-              width: '100%', borderCollapse: 'collapse',
-              fontSize: '14px', fontFamily: 'var(--font-sans)',
-            }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  {['Parameter', 'Average', 'Safe Range', 'Status'].map(col => (
-                    <th key={col} style={{
-                      textAlign: 'left',
-                      padding: '8px var(--space-xs)',
-                      fontSize: '11px', fontWeight: '600',
-                      textTransform: 'uppercase', letterSpacing: '0.07em',
-                      color: 'var(--color-text-secondary)',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {col}
-                    </th>
+                
+                <div style={{ flex: 1, overflowY: 'auto', padding: '16px', backgroundColor: '#F8FAFC', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {embeddedChat.map((msg, idx) => (
+                    <div key={idx} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                      <div style={{
+                        maxWidth: '85%',
+                        backgroundColor: msg.role === 'user' ? '#0F172A' : '#fff',
+                        color: msg.role === 'user' ? '#fff' : 'var(--color-text-primary)',
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        fontSize: '12.5px',
+                        lineHeight: '1.5',
+                        border: msg.role === 'assistant' ? '1px solid var(--color-border)' : 'none',
+                      }}>
+                        {msg.text}
+                      </div>
+                    </div>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { param: 'pH',              avg: summary.pH_avg,          unit: '',     range: '6.5 – 8.2',  ok: summary.pH_avg >= 6.5 && summary.pH_avg <= 8.2 },
-                  { param: 'TDS',             avg: summary.TDS_avg,         unit: 'mg/L', range: '≤ 400',      ok: summary.TDS_avg <= 400 },
-                  { param: 'Dissolved Oxygen',avg: summary.DO_avg,          unit: 'mg/L', range: '≥ 4.5',      ok: summary.DO_avg >= 4.5 },
-                  { param: 'Turbidity',       avg: summary.turbidity_avg,   unit: 'NTU',  range: '≤ 5.0',      ok: summary.turbidity_avg <= 5.0 },
-                  { param: 'Temperature',     avg: summary.temperature_avg, unit: '°C',   range: '—',          ok: null },
-                ].map((row, i, arr) => (
-                  <tr key={row.param} style={{
-                    borderBottom: i < arr.length - 1 ? '1px solid var(--color-border)' : 'none',
-                  }}>
-                    <td style={{ padding: '10px var(--space-xs)', fontWeight: '500', color: 'var(--color-text-primary)' }}>
-                      {row.param}
-                    </td>
-                    <td style={{ padding: '10px var(--space-xs)', fontFamily: 'var(--font-mono)', fontWeight: '600', color: 'var(--color-text-primary)' }}>
-                      {typeof row.avg === 'number' ? row.avg.toFixed(2) : '—'} {row.unit}
-                    </td>
-                    <td style={{ padding: '10px var(--space-xs)', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-text-secondary)' }}>
-                      {row.range}
-                    </td>
-                    <td style={{ padding: '10px var(--space-xs)' }}>
-                      {row.ok === null ? (
-                        <span style={{ color: 'var(--color-text-secondary)', fontSize: '13px' }}>—</span>
-                      ) : (
-                        <span style={{
-                          fontSize: '12px', fontWeight: '600',
-                          color: row.ok ? 'var(--color-safe)' : 'var(--color-risk)',
+                  {chatLoading && (
+                    <div style={{ display: 'flex', gap: '4px', alignSelf: 'flex-start', backgroundColor: '#fff', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+                      <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#64748B', display: 'inline-block', animation: 'dot-bounce 1.2s infinite' }} />
+                      <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#64748B', display: 'inline-block', animation: 'dot-bounce 1.2s infinite 0.2s' }} />
+                      <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#64748B', display: 'inline-block', animation: 'dot-bounce 1.2s infinite 0.4s' }} />
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ padding: '10px 16px', borderTop: '1px solid var(--color-border)', display: 'flex', gap: '8px', backgroundColor: '#fff' }}>
+                  <input
+                    type="text"
+                    placeholder="Ask about AQI, WQI, or forecasts..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleEmbeddedChatSend()}
+                    style={{
+                      flex: 1,
+                      backgroundColor: '#F8FAFC',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '8px',
+                      padding: '8px 12px',
+                      fontSize: '13px',
+                      outline: 'none',
+                    }}
+                  />
+                  <button
+                    onClick={handleEmbeddedChatSend}
+                    disabled={chatLoading || !chatInput.trim()}
+                    style={{
+                      padding: '6px 14px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: chatInput.trim() ? 'pointer' : 'not-allowed',
+                      backgroundColor: chatInput.trim() ? '#0F172A' : '#94A3B8',
+                      color: '#fff',
+                    }}
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'sandbox' && (
+            <MlSandbox 
+              selectedLocation={selectedLocation} 
+              currentTelemetry={latestReading} 
+            />
+          )}
+
+          {activeTab === 'analytics' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* LINE TRENDS & PREDICTIVE FORECASTS ROW */}
+              {readings.length > 0 && forecast.length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px' }}>
+                  <Chart defaultTab="air" historicalData={readings} locationName={selectedLocation} />
+                  <Chart defaultTab="water" historicalData={readings} locationName={selectedLocation} />
+                  <Chart defaultTab="forecast" forecastData={forecast} locationName={selectedLocation} />
+                </div>
+              )}
+
+              {/* SOURCE ANALYSIS & MITIGATION ROW */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                <SourceAnalysis data={sourceData.sources} explanation={sourceData.explanation} />
+                <RecommendationsList recommendations={recommendations} />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'telemetry' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Report Exporter Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
+                {/* Reports Console */}
+                <div style={{
+                  backgroundColor: '#fff',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  minHeight: '340px',
+                  justifyContent: 'space-between'
+                }}>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-primary)' }}>
+                      🖨 Environmental Reports Console
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                      Auto-generate compliance reporting audits
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1, justifyContent: 'center' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <button
+                        onClick={() => handleReportDownload('weekly', 'csv')}
+                        style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#fff', fontSize: '12px', fontWeight: '600' }}
+                      >
+                        📥 Export CSV
+                      </button>
+                      <button
+                        onClick={() => handleReportDownload('csr', 'pdf')}
+                        style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#fff', fontSize: '12px', fontWeight: '600' }}
+                      >
+                        📄 Download PDF
+                      </button>
+                    </div>
+
+                    {[
+                      { type: 'weekly', title: 'Weekly Operational Audit', desc: 'Summary of 24h average thresholds' },
+                      { type: 'monthly', title: 'Monthly ESG Scorecard', desc: 'Targeting SDG carbon footprint rates' },
+                      { type: 'compliance', title: 'EPA Regulatory Compliance', desc: 'Verification of pH, TDS & PM boundaries' }
+                    ].map(rep => (
+                      <div
+                        key={rep.type}
+                        onClick={() => handleReportDownload(rep.type, 'pdf')}
+                        style={{
+                          border: '1px solid var(--color-border)',
+                          borderRadius: '8px',
+                          padding: '10px',
+                          cursor: 'pointer',
+                          backgroundColor: '#FAFAFA',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          transition: 'background-color 0.15s'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.backgroundColor = '#F1F5F9'}
+                        onMouseOut={e => e.currentTarget.style.backgroundColor = '#FAFAFA'}
+                      >
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text-primary)' }}>{rep.title}</div>
+                          <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>{rep.desc}</div>
+                        </div>
+                        <span style={{ fontSize: '16px' }}>⚡</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sensor Health Monitoring */}
+                {sensorHealth && (
+                  <SensorHealthMonitor data={sensorHealth} />
+                )}
+              </div>
+
+              {/* Raw / Synthetic Telemetry Database Table */}
+              <div style={{
+                backgroundColor: '#fff',
+                border: '1px solid var(--color-border)',
+                borderRadius: '12px',
+                padding: '20px',
+                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>📊 Historical Telemetry Logger</h3>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+                      Raw synthetic telemetry logs for all monitored indicators
+                    </p>
+                  </div>
+                  <span style={{ fontSize: '11px', backgroundColor: '#F1F5F9', color: '#475569', padding: '4px 8px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>
+                    Total: {readings.length} records loaded
+                  </span>
+                </div>
+
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                        <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>Timestamp</th>
+                        <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>AQI</th>
+                        <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>PM2.5</th>
+                        <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>PM10</th>
+                        <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>WQI</th>
+                        <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>pH</th>
+                        <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>TDS</th>
+                        <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>DO</th>
+                        <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>Turbidity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {readings.slice(-15).reverse().map((r, idx) => (
+                        <tr key={idx} style={{ borderBottom: idx < 14 ? '1px solid #F1F5F9' : 'none' }}>
+                          <td style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#64748B' }}>
+                            {new Date(r.timestamp).toLocaleString()}
+                          </td>
+                          <td style={{ padding: '10px 12px', fontWeight: '700', color: r.AQI > 100 ? '#EF4444' : 'inherit' }}>{r.AQI}</td>
+                          <td style={{ padding: '10px 12px' }}>{r.PM25}</td>
+                          <td style={{ padding: '10px 12px' }}>{r.PM10}</td>
+                          <td style={{ padding: '10px 12px', fontWeight: '700', color: r.water_status === 'UNSAFE' ? '#EF4444' : 'inherit' }}>{r.WQI}</td>
+                          <td style={{ padding: '10px 12px' }}>{r.pH}</td>
+                          <td style={{ padding: '10px 12px' }}>{r.TDS}</td>
+                          <td style={{ padding: '10px 12px' }}>{r.DO}</td>
+                          <td style={{ padding: '10px 12px' }}>{r.turbidity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'safety' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                {/* Active Alerts Logs */}
+                <div style={{
+                  backgroundColor: '#fff',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  minHeight: '340px'
+                }}>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-primary)' }}>
+                      🚨 Active Alerts Center
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                      Real-time critical incidents across all arrays
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', maxHeight: '230px' }}>
+                    {activeAlerts.length === 0 ? (
+                      <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: '50px 0', fontSize: '13px' }}>
+                        ✓ All systems operating within normal parameters.
+                      </div>
+                    ) : (
+                      activeAlerts.map(alert => (
+                        <div key={alert.id} style={{
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          backgroundColor: alert.type === 'Critical' ? '#FEF2F2' : '#FFFBEB',
+                          borderLeft: `4px solid ${alert.type === 'Critical' ? '#EF4444' : '#F59E0B'}`,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '4px'
                         }}>
-                          {row.ok ? '✓ Within range' : '⚠ Out of range'}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>
+                            <span style={{ color: alert.type === 'Critical' ? '#EF4444' : '#B45309' }}>{alert.type} Alert</span>
+                            <span style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)' }}>Live</span>
+                          </div>
+                          <div style={{ fontSize: '12.5px', color: 'var(--color-text-primary)', fontWeight: '500' }}>
+                            {alert.msg}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Sustainability ESG Scorecard */}
+                <SustainabilityScorecard />
+              </div>
+
+              {/* Admin Panel Simulation Controls */}
+              <div style={{
+                backgroundColor: '#fff',
+                border: '1px solid var(--color-border)',
+                borderRadius: '12px',
+                padding: '20px',
+                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+              }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '15px', fontWeight: '700' }}>⚙️ Hackathon Overrides & Simulation Panel</h3>
+                <AdminPanel onConfigChange={handleConfigChange} />
+              </div>
+
+              {/* AI observations feed */}
+              {aiInsights.length > 0 && (
+                <div style={{
+                  backgroundColor: '#1E293B',
+                  border: '1px solid #334155',
+                  borderRadius: '12px',
+                  padding: '16px 20px',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                  color: '#fff',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
+                  <div style={{ fontSize: '13px', fontWeight: '700', letterSpacing: '0.04em', color: '#38BDF8', textTransform: 'uppercase' }}>
+                    ✦ AI Insights Timeline & Activity Feed
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {aiInsights.map((insight, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: '12px', fontSize: '13px', borderBottom: idx < aiInsights.length - 1 ? '1px dashed #334155' : 'none', paddingBottom: '8px', alignItems: 'center' }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', color: '#64748B', fontWeight: '700', flexShrink: 0 }}>
+                          {insight.time}
                         </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                        <span style={{
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          fontSize: '10px',
+                          fontWeight: '700',
+                          backgroundColor: insight.severity === 'CRITICAL' ? 'rgba(239, 68, 68, 0.2)' : (insight.severity === 'WARNING' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(56, 189, 248, 0.2)'),
+                          color: insight.severity === 'CRITICAL' ? '#EF4444' : (insight.severity === 'WARNING' ? '#F59E0B' : '#38BDF8'),
+                          textTransform: 'uppercase',
+                          flexShrink: 0
+                        }}>
+                          {insight.severity}
+                        </span>
+                        <span style={{ fontWeight: '600', color: '#94A3B8', flexShrink: 0 }}>
+                          [{insight.location}]
+                        </span>
+                        <span style={{ color: '#F8FAFC' }}>
+                          {insight.message}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
-      </main>
+        </main>
+      </div>
 
-      {/* Floating chat – outside main so it overlays everything */}
-      <ChatWidget />
+      {/* Floating assistant bot */}
+      <ChatWidget selectedLocation={selectedLocation} />
     </div>
   );
 }

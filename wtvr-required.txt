@@ -1,0 +1,140 @@
+================================================================================
+                           ECOSPHERE AI - SYSTEM REQUIREMENTS
+================================================================================
+
+This document outlines all external APIs required, how to obtain them, and the 
+system architecture/making for the EcoSphere AI Dashboard (FlowZint AI Hackathon).
+
+--------------------------------------------------------------------------------
+1. EXTERNAL APIS & INTEGRATIONS
+--------------------------------------------------------------------------------
+
+A. GOOGLE GEMINI API
+   - Purpose: Powering the Natural Language Environmental Assistant, generating 
+     autonomous explanations for pollution sources, creating AI Recommendations, 
+     and compiling automated Environmental Reports (weekly, CSR, compliance).
+   - How to obtain:
+     1. Go to Google AI Studio (https://aistudio.google.com/).
+     2. Click "Get API Key" and select/create a Google Cloud Project.
+     3. Copy the API key and add it as GEMINI_API_KEY in the `.env` file.
+   - Endpoint used: `gemini-2.5-flash` via the `google-genai` Python SDK.
+
+B. OPENWEATHERMAP AIR POLLUTION & WEATHER API
+   - Purpose: Retrieve real-time, historical, and 5-day forecast Air Quality Index 
+     (AQI) along with pollutant levels (PM2.5, PM10, CO, NO2, SO2, O3) and weather 
+     conditions (temp, humidity, rain probability) for monitored locations.
+   - How to obtain:
+     1. Sign up on OpenWeatherMap (https://openweathermap.org/).
+     2. Subscribe to the "Current weather and forecasts" and "Air Pollution" APIs 
+        (free tier allows up to 60 calls/minute, ample for hackathon scale).
+     3. Retrieve the API key from the dashboard and set it as OPENWEATHER_API_KEY.
+   - Key Endpoints:
+     * Current AQI: `http://api.openweathermap.org/data/2.5/air_pollution`
+     * Forecast AQI: `http://api.openweathermap.org/data/2.5/air_pollution/forecast`
+     * Weather Data: `https://api.openweathermap.org/data/2.5/weather`
+
+C. IQAIR (AIRVISUAL) API (Optional / Alternative)
+   - Purpose: High-accuracy global air quality monitoring and rankings.
+   - How to obtain:
+     1. Register on the IQAir Console (https://www.iqair.com/dashboard/api).
+     2. Obtain a free developer key (10,000 calls/month).
+   - Key Endpoint: `http://api.airvisual.com/v2/nearest_city`
+
+D. MAPBOX GL JS & MAPBOX VECTOR TILES API
+   - Purpose: Power the interactive GIS Geospatial Digital Twin, including AQI Heatmap 
+     layers, Satellite overlay layer, and custom markers/popups for IoT sensors.
+   - How to obtain:
+     1. Create a free account on Mapbox (https://www.mapbox.com/).
+     2. Generate a Public Access Token from your account dashboard.
+     3. Set this token in `frontend/.env.local` as VITE_MAPBOX_TOKEN.
+   - Key Library: `@mapbox/mapbox-sdk` and `mapbox-gl` (in react-map-gl).
+
+E. OPENSTREETMAP / LEAFLET (Alternative mapping stack)
+   - Purpose: Free, open-source GIS interactive map requiring no API keys. Can be 
+     used as a fallback to Mapbox.
+   - How to obtain: No key required. Install leaflet and react-leaflet packages.
+
+--------------------------------------------------------------------------------
+2. SYSTEM ARCHITECTURE & SYSTEM MAKING
+--------------------------------------------------------------------------------
+
+The system is designed as a full-stack real-time IoT monitoring platform featuring 
+predictive AI, chatbot interfaces, geospatial twin mapping, and automated alert/decision systems.
+
+A. DATA STORAGE & STREAMING LAYER
+   - Database / Data Files:
+     * `aquaguard_data.json` & `aquaguard_data.csv`: Continuous hourly history (7200 rows) 
+       representing a year of historical water parameters (pH, TDS, DO, turbidity, temperature).
+     * `ecosphere_air_data.json` & `ecosphere_air_data.csv` (To Be Generated): Year-long 
+       hourly history for air quality parameters: AQI, PM2.5, PM10, CO, NO2, SO2, O3, 
+       temperature, humidity, wind speed, and traffic index.
+     * `locations_metadata.json`: Holds metadata for the 18 monitored locations (name, lat, 
+       lon, sector type [Industrial, Residential, River, etc.], sensor IDs, and current risk ratings).
+   - Real-Time Simulation Engine:
+     * A background generator simulating real-time sensor streams with seasonal, daily, and 
+       hourly trends, traffic spikes (morning/evening rush), and industrial activity cycles.
+
+B. BACKEND (FASTAPI / PYTHON 3.10+)
+   - Core framework: FastAPI for asynchronous, high-performance API endpoints.
+   - Key Libraries:
+     * `pandas`, `numpy` for data manipulation.
+     * `scikit-learn`, `xgboost` for ML inference.
+     * `google-genai` for Gemini assistant and source attribution.
+     * `fpdf2` or `reportlab` for automated PDF report generation.
+   - REST API Routes:
+     * `/api/summary`: Current KPIs (Overall Environmental Score, AQI, WQI, alert counts).
+     * `/api/readings/latest`: Latest hourly telemetry for all 18 sensors and parameters.
+     * `/api/readings/history`: Historical data points for time-series charts.
+     * `/api/map/locations`: GeoJSON coordinates, statuses, and sensor status for GIS map.
+     * `/api/ai/forecast`: 24h & 7-day ML predictions for AQI, WQI, and weather probability.
+     * `/api/ai/source-analysis`: Pollution source breakdown (traffic vs industry vs burning).
+     * `/api/ai/recommendations`: Prioritized mitigation actions with estimated impact.
+     * `/api/ai/chat`: Interactive Gemini-powered bot contextualized with live readings.
+     * `/api/reports/generate`: Generates CSV/PDF summaries for Weekly, CSR, and Compliance.
+     * `/api/sensor/health`: Status of all monitoring IoT devices (battery, online/offline).
+     * `/api/admin/config`: Endpoint to update thresholds, configure sensors, and configure alerts.
+
+C. MACHINE LEARNING ENGINE
+   - Water Quality Model: XGBoost classifier (`aquaguard_model.joblib`) classifying WQI (SAFE/UNSAFE).
+   - Air Quality Model: XGBoost regressor predicting future hourly AQI based on lagged pollutants, 
+     traffic index, and weather features.
+   - Forecast Pipeline: Uses rolling windows and lag features to predict 7-day trends.
+   - Prediction Confidence: Calculated based on statistical variance of trees in Random Forest 
+     or XGBoost prediction residuals.
+
+D. FRONTEND (REACT 18+ / VITE / VANILLA CSS)
+   - Layout: Single-page dashboard optimized for large desktop screens (Control Center styling).
+   - Key Libraries:
+     * `lucide-react` for modern, crisp icons.
+     * `recharts` for highly customized line charts, bar graphs, and area charts.
+     * `react-leaflet` or `mapbox-gl` for the geospatial mapping interface.
+     * `canvas-confetti` / Micro-animations for high-fidelity interactive elements.
+   - Component Layout (Single-Screen Grid):
+     * [Top Cards]: KPIs (Overall Score, AQI, WQI, Temperature, Humidity, Weather, Alerts, Active Sensors).
+     * [Middle Left]: Geospatial Digital Twin Map (Leaflet or Mapbox overlaying heatmaps & zones).
+     * [Middle Right]: AI Chatbot Assistant Window.
+     * [Row 3]: AQI & Water Trend charts, alongside Tomorrow & 7-day AI Forecast.
+     * [Row 4]: Pollution Source Analysis (donut chart) & AI Recommendations (mitigation list).
+     * [Row 5]: Active Alerts, Sustainability Scorecard, and Automated Report Exporters.
+     * [Row 6]: Sensor Health Monitor and Historical Seasonal Analytics.
+
+--------------------------------------------------------------------------------
+3. DEVELOPMENT SETUP
+--------------------------------------------------------------------------------
+
+1. Set up python virtual environment and backend dependencies:
+   $ cd backend
+   $ python -m venv venv
+   $ .\venv\Scripts\activate  (or source venv/bin/activate on Mac/Linux)
+   $ pip install -r requirements.txt
+
+2. Run backend dev server:
+   $ python main.py  (Starts server at http://localhost:8000)
+
+3. Set up frontend dependencies:
+   $ cd ../frontend
+   $ npm install
+
+4. Run frontend dev server:
+   $ npm run dev     (Starts client dashboard at http://localhost:5173)
+================================================================================

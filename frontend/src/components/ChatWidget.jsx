@@ -4,17 +4,12 @@ import { sendChatMessage } from '../data/api';
 /**
  * ChatWidget
  * Floating chat assistant powered by the backend /api/chat endpoint.
- * - Bubble button fixed at bottom-right
- * - Slide-up popup panel with Ocean Deep header
- * - User messages right-aligned, assistant messages left-aligned
- * - Animated typing indicator while loading
- * - Unread badge when panel is closed
  */
-export default function ChatWidget() {
+export default function ChatWidget({ selectedLocation }) {
   const [open, setOpen]       = useState(false);
   const [messages, setMsgs]   = useState([{
     role: 'assistant',
-    text: 'Hello. I am AquaGuard AI. Ask me about current water quality metrics, safety status, or recommended actions.',
+    text: `Hello! I am EcoSphere AI. Ask me about air quality indices (AQI), water quality (WQI), active alerts, or sustainability guidelines for ${selectedLocation || 'the campus'}.`,
   }]);
   const [input, setInput]     = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,6 +17,16 @@ export default function ChatWidget() {
 
   const endRef   = useRef(null);
   const inputRef = useRef(null);
+
+  // Sync initial message when selectedLocation changes
+  useEffect(() => {
+    if (messages.length === 1) {
+      setMsgs([{
+        role: 'assistant',
+        text: `Hello! I am EcoSphere AI. Ask me about air quality indices (AQI), water quality (WQI), active alerts, or sustainability guidelines for ${selectedLocation || 'the campus'}.`,
+      }]);
+    }
+  }, [selectedLocation]);
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
@@ -52,19 +57,16 @@ export default function ChatWidget() {
     }
   };
 
-  /* ─── Shared style tokens ─── */
   const PANEL_W = 356;
   const MSG_RADIUS_USER = '12px 12px 3px 12px';
   const MSG_RADIUS_BOT  = '12px 12px 12px 3px';
 
   return (
     <>
-      {/* ══════════════════════════════════════
-          Chat panel (popup)
-      ══════════════════════════════════════ */}
+      {/* Chat panel */}
       <div
         role="dialog"
-        aria-label="AquaGuard AI assistant"
+        aria-label="EcoSphere AI assistant"
         aria-modal="true"
         aria-hidden={!open}
         style={{
@@ -75,13 +77,12 @@ export default function ChatWidget() {
           height: '472px',
           backgroundColor: '#fff',
           border: '1px solid var(--color-border)',
-          borderRadius: '8px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+          borderRadius: '12px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
           zIndex: 1000,
-          /* Animation */
           transformOrigin: 'bottom right',
           transform: open ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.97)',
           opacity: open ? 1 : 0,
@@ -91,34 +92,34 @@ export default function ChatWidget() {
       >
         {/* Header */}
         <div style={{
-          backgroundColor: 'var(--color-ocean-deep)',
-          height: '48px',
+          backgroundColor: '#0F172A',
+          height: '52px',
           padding: '0 var(--space-md)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexShrink: 0,
+          borderBottom: '1px solid #1E293B'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)' }}>
-            {/* AQ monogram */}
+            {/* Logo */}
             <div style={{
-              width: '26px', height: '26px',
-              border: '1px solid rgba(255,255,255,0.22)',
-              borderRadius: '4px',
-              backgroundColor: 'rgba(255,255,255,0.08)',
+              width: '28px', height: '28px',
+              border: '1.5px solid #38BDF8',
+              borderRadius: '6px',
+              backgroundColor: 'rgba(56, 189, 248, 0.08)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '10px', fontWeight: '700',
-              fontFamily: 'var(--font-mono)',
-              color: '#fff', flexShrink: 0,
+              fontSize: '12px', fontWeight: '800',
+              color: '#38BDF8', flexShrink: 0,
             }}>
-              AQ
+              🌍
             </div>
             <div>
               <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff', lineHeight: 1.2 }}>
-                AquaGuard AI
+                EcoSphere Assistant
               </div>
-              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.55)', marginTop: '1px' }}>
-                Water Quality Assistant
+              <div style={{ fontSize: '10px', color: '#64748B', marginTop: '1px' }}>
+                AI Environmental Copilot
               </div>
             </div>
           </div>
@@ -127,14 +128,14 @@ export default function ChatWidget() {
             aria-label="Close chat"
             style={{
               background: 'none', border: 'none',
-              color: 'rgba(255,255,255,0.65)',
+              color: '#64748B',
               fontSize: '22px', lineHeight: 1,
               cursor: 'pointer', padding: '4px 6px',
               borderRadius: '4px',
               transition: 'color 0.1s',
             }}
             onMouseOver={e => e.currentTarget.style.color = '#fff'}
-            onMouseOut={e  => e.currentTarget.style.color = 'rgba(255,255,255,0.65)'}
+            onMouseOut={e  => e.currentTarget.style.color = '#64748B'}
           >
             ×
           </button>
@@ -144,9 +145,9 @@ export default function ChatWidget() {
         <div style={{
           flex: 1, overflowY: 'auto',
           padding: 'var(--space-md)',
-          backgroundColor: '#f7f9fb',
+          backgroundColor: '#f8fafc',
           display: 'flex', flexDirection: 'column',
-          gap: 'var(--space-xs)',
+          gap: '12px',
         }}>
           {messages.map((msg, i) => (
             <div key={i} style={{
@@ -155,7 +156,7 @@ export default function ChatWidget() {
             }}>
               <div style={{
                 maxWidth: '82%',
-                backgroundColor: msg.role === 'user' ? 'var(--color-ocean-deep)' : '#fff',
+                backgroundColor: msg.role === 'user' ? '#0F172A' : '#fff',
                 color: msg.role === 'user' ? '#fff' : 'var(--color-text-primary)',
                 padding: '9px 12px',
                 borderRadius: msg.role === 'user' ? MSG_RADIUS_USER : MSG_RADIUS_BOT,
@@ -163,6 +164,7 @@ export default function ChatWidget() {
                 lineHeight: 1.55,
                 whiteSpace: 'pre-line',
                 border: msg.role === 'assistant' ? '1px solid var(--color-border)' : 'none',
+                boxShadow: msg.role === 'assistant' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
               }}>
                 {msg.text}
               </div>
@@ -183,7 +185,7 @@ export default function ChatWidget() {
                   <span key={i} style={{
                     width: '5px', height: '5px',
                     borderRadius: '50%',
-                    backgroundColor: 'var(--color-text-secondary)',
+                    backgroundColor: '#64748B',
                     display: 'inline-block',
                     animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
                   }} />
@@ -209,7 +211,7 @@ export default function ChatWidget() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && send()}
-            placeholder="Ask about water quality…"
+            placeholder="Ask about air/water readings..."
             disabled={loading}
             style={{
               flex: 1,
@@ -219,11 +221,11 @@ export default function ChatWidget() {
               fontSize: '13px',
               fontFamily: 'var(--font-sans)',
               color: 'var(--color-text-primary)',
-              backgroundColor: '#f7f9fb',
+              backgroundColor: '#f8fafc',
               outline: 'none',
               transition: 'border-color 0.12s',
             }}
-            onFocus={e => e.target.style.borderColor = 'var(--color-ocean-deep)'}
+            onFocus={e => e.target.style.borderColor = '#38BDF8'}
             onBlur={e  => e.target.style.borderColor = 'var(--color-border)'}
           />
           <button
@@ -238,66 +240,62 @@ export default function ChatWidget() {
               border: 'none',
               borderRadius: '6px',
               cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
-              backgroundColor: loading || !input.trim() ? '#8eacc5' : 'var(--color-ocean-deep)',
+              backgroundColor: loading || !input.trim() ? '#94A3B8' : '#0F172A',
               color: '#fff',
               flexShrink: 0,
               transition: 'background-color 0.12s',
             }}
-            onMouseOver={e => { if (!loading && input.trim()) e.currentTarget.style.backgroundColor = '#0a2d52'; }}
-            onMouseOut={e  => { if (!loading && input.trim()) e.currentTarget.style.backgroundColor = 'var(--color-ocean-deep)'; }}
+            onMouseOver={e => { if (!loading && input.trim()) e.currentTarget.style.backgroundColor = '#1E293B'; }}
+            onMouseOut={e  => { if (!loading && input.trim()) e.currentTarget.style.backgroundColor = '#0F172A'; }}
           >
             Send
           </button>
         </div>
       </div>
 
-      {/* ══════════════════════════════════════
-          Floating bubble trigger button
-      ══════════════════════════════════════ */}
+      {/* Floating bubble button */}
       <button
         id="chat-bubble-btn"
         onClick={() => { setOpen(o => !o); setUnread(0); }}
-        aria-label="Open AquaGuard AI assistant"
+        aria-label="Open EcoSphere AI assistant"
         style={{
           position: 'fixed',
           bottom: '24px', right: '24px',
-          width: '52px', height: '52px',
+          width: '56px', height: '56px',
           borderRadius: '50%',
           border: 'none',
-          backgroundColor: 'var(--color-ocean-deep)',
+          backgroundColor: '#0F172A',
           color: '#fff',
           cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 2px 8px rgba(15,59,111,0.38)',
+          boxShadow: '0 4px 12px rgba(15, 23, 42, 0.4)',
           zIndex: 1001,
-          transition: 'background-color 0.15s',
+          transition: 'transform 0.15s, background-color 0.15s',
         }}
-        onMouseOver={e => e.currentTarget.style.backgroundColor = '#0a2d52'}
-        onMouseOut={e  => e.currentTarget.style.backgroundColor = 'var(--color-ocean-deep)'}
+        onMouseOver={e => {
+          e.currentTarget.style.backgroundColor = '#1E293B';
+          e.currentTarget.style.transform = 'scale(1.05)';
+        }}
+        onMouseOut={e  => {
+          e.currentTarget.style.backgroundColor = '#0F172A';
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
       >
         {open ? (
-          <span style={{ fontSize: '22px', lineHeight: 1 }}>×</span>
+          <span style={{ fontSize: '24px', lineHeight: 1 }}>×</span>
         ) : (
-          <span style={{
-            fontSize: '13px', fontWeight: '700',
-            fontFamily: 'var(--font-mono)',
-            letterSpacing: '-0.5px',
-          }}>
-            AQ
-          </span>
+          <span style={{ fontSize: '22px' }}>🌍</span>
         )}
 
-        {/* Unread badge */}
         {unread > 0 && !open && (
           <span style={{
-            position: 'absolute', top: '6px', right: '6px',
+            position: 'absolute', top: '2px', right: '2px',
             width: '16px', height: '16px',
             borderRadius: '50%',
-            backgroundColor: 'var(--color-risk)',
+            backgroundColor: '#EF4444',
             color: '#fff',
             fontSize: '9px', fontWeight: '700',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--font-sans)',
             border: '2px solid #fff',
           }}>
             {unread}
