@@ -1,4 +1,4 @@
-# AquaGuard AI – Quick Start (Copy & Paste)
+# EcoSphere AI – Quick Start (Copy & Paste)
 
 **Goal:** Working dashboard in 3 hours with real data + mock frontend  
 **No dependencies on the other tracks** – they run in parallel
@@ -24,10 +24,10 @@ pip3 --version
 
 ```bash
 cd /tmp
-mkdir aquaguard && cd aquaguard
+mkdir ecosphere && cd ecosphere
 
 # Copy the data generator code and run it
-python3 aquaguard_organic_data_generator.py
+python3 ecosphere_organic_data_generator.py
 ```
 
 **Expected output:**
@@ -36,7 +36,7 @@ Generated 720 readings
   SAFE: 540 (75.0%)
   UNSAFE: 180 (25.0%)
   Date range: 2026-06-04T00:00:00 to 2026-07-03T23:00:00
-  Saved to: aquaguard_data.json
+  Saved to: ecosphere_data.json
 
 Sample SAFE reading:
   {'id': 1, 'pH': 7.05, 'TDS': 198.2, 'DO': 7.12, ...}
@@ -78,12 +78,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-with open('../aquaguard_data.json', 'r') as f:
+with open('../ecosphere_data.json', 'r') as f:
     ALL_DATA = json.load(f)
 
 @app.get("/")
 def root():
-    return {"status": "AquaGuard API running", "total_readings": len(ALL_DATA)}
+    return {"status": "EcoSphere API running", "total_readings": len(ALL_DATA)}
 
 @app.get("/api/readings/latest")
 def get_latest():
@@ -140,7 +140,7 @@ curl http://localhost:8000/api/readings/summary
 **In a new terminal:**
 
 ```bash
-cd /tmp/aquaguard
+cd /tmp/ecosphere
 npm create vite@latest frontend -- --template react
 cd frontend
 npm install
@@ -214,7 +214,7 @@ export default function Header() {
       alignItems: 'center'
     }}>
       <div>
-        <h1 style={{ fontSize: '24px', margin: 0 }}>AquaGuard AI</h1>
+        <h1 style={{ fontSize: '24px', margin: 0 }}>EcoSphere AI</h1>
         <p style={{ fontSize: '14px', opacity: 0.9, margin: 0 }}>Water Quality Intelligence</p>
       </div>
       <div style={{ textAlign: 'right' }}>
@@ -321,7 +321,7 @@ export default function ChatWidget() {
   
   return (
     <div className="card" style={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
-      <h2 style={{ fontSize: '18px', marginBottom: 'var(--space-md)' }}>AquaGuard Assistant</h2>
+      <h2 style={{ fontSize: '18px', marginBottom: 'var(--space-md)' }}>EcoSphere Assistant</h2>
       
       <div style={{
         flex: 1,
@@ -533,7 +533,7 @@ If you see real data in the dashboard → **You're done! 🎉**
 - Is port 8000 free? `lsof -i :8000`
 
 **No data showing**
-- Check `aquaguard_data.json` exists
+- Check `ecosphere_data.json` exists
 - Check path in `main.py` is correct
 - Print `len(ALL_DATA)` in backend to verify load
 

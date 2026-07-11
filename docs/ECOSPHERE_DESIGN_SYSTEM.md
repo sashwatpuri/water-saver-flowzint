@@ -1,4 +1,4 @@
-# AquaGuard AI – Design System & Theme Prompt
+# EcoSphere AI – Design System & Theme Prompt
 
 ## Design Philosophy
 **Not AI-Generated. Not Trendy. Professional Water Quality Monitoring.**
@@ -99,7 +99,7 @@ Use this consistently. No random pixel values.
 ### Main Dashboard
 ```
 ┌─ Header (Ocean Deep bg, white text) ───────────────────────────┐
-│ AquaGuard AI  │  Location: Monitoring Point A  │  Last Update: X │
+│ EcoSphere AI  │  Location: Monitoring Point A  │  Last Update: X │
 ├─────────────────────────────────────────────────────────────────┤
 │ ┌─ Alert Banner (if risk) ─────────────────────────────────────┤
 │ │ ⚠️  DO below safe threshold. Aeration recommended.            │

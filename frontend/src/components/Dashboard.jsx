@@ -23,8 +23,30 @@ import {
   sendChatMessage
 } from '../data/api';
 
+/* ── Inline SVG icons for sidebar tabs ── */
+const SidebarIcon = ({ type, active }) => {
+  const color = active ? '#0D9488' : '#64748B';
+  const size = 16;
+  const props = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round', style: { flexShrink: 0 } };
+
+  switch (type) {
+    case 'overview':
+      return (<svg {...props}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>);
+    case 'sandbox':
+      return (<svg {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>);
+    case 'analytics':
+      return (<svg {...props}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>);
+    case 'telemetry':
+      return (<svg {...props}><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>);
+    case 'safety':
+      return (<svg {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>);
+    default:
+      return null;
+  }
+};
+
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'sandbox' | 'analytics' | 'telemetry' | 'safety'
+  const [activeTab, setActiveTab] = useState('overview');
   const [locations, setLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState('Sector A');
   const [readings, setReadings] = useState([]);
@@ -122,7 +144,7 @@ export default function Dashboard() {
       const reply = await sendChatMessage(text, selectedLocation);
       setEmbeddedChat(prev => [...prev, { role: 'assistant', text: reply }]);
     } catch {
-      setEmbeddedChat(prev => [...prev, { role: 'assistant', text: 'Error communicating with Gemini Core.' }]);
+      setEmbeddedChat(prev => [...prev, { role: 'assistant', text: 'Error communicating with the server.' }]);
     } finally {
       setChatLoading(false);
     }
@@ -161,7 +183,7 @@ export default function Dashboard() {
       activeAlerts.push({
         id: `sen-off-${loc.name}`,
         type: 'Warning',
-        msg: `IoT Sensor Core offline at ${loc.name}.`
+        msg: `Sensor offline at ${loc.name}.`
       });
     }
   });
@@ -172,19 +194,19 @@ export default function Dashboard() {
       <div style={{
         minHeight: '100vh',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexDirection: 'column', gap: '16px',
-        backgroundColor: '#0F172A',
+        flexDirection: 'column', gap: '20px',
+        background: 'linear-gradient(160deg, #0F172A 0%, #1E293B 100%)',
         color: '#94A3B8',
         fontFamily: 'var(--font-sans)',
       }}>
         <div style={{
-          width: '42px', height: '42px',
-          border: '3px solid #1E293B',
-          borderTopColor: '#38BDF8',
+          width: '44px', height: '44px',
+          border: '3px solid rgba(255,255,255,0.08)',
+          borderTopColor: 'var(--color-teal, #0D9488)',
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }} />
-        <div style={{ fontSize: '15px', fontWeight: '600' }}>Booting EcoSphere AI Platform…</div>
+        <div style={{ fontSize: '15px', fontWeight: '500', color: '#CBD5E1' }}>Loading dashboard…</div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -194,8 +216,8 @@ export default function Dashboard() {
   if (error) {
     return (
       <div style={{
-        maxWidth: '480px', margin: '120px auto',
-        padding: '24px',
+        maxWidth: '440px', margin: '120px auto',
+        padding: '28px',
         backgroundColor: '#1E293B',
         border: '1px solid #334155',
         borderLeft: '4px solid #EF4444',
@@ -204,23 +226,24 @@ export default function Dashboard() {
         color: '#F8FAFC'
       }}>
         <div style={{ fontWeight: '700', color: '#EF4444', marginBottom: '8px', fontSize: '16px' }}>
-          ⚠️ Core API Connection Error
+          Connection Error
         </div>
-        <p style={{ fontSize: '13px', color: '#94A3B8', marginBottom: '16px' }}>
+        <p style={{ fontSize: '13px', color: '#94A3B8', marginBottom: '16px', lineHeight: 1.6 }}>
           {error}
         </p>
         <button
           onClick={initLoad}
           style={{
-            padding: '8px 16px', fontSize: '13px', fontWeight: '700',
-            border: 'none', borderRadius: '6px', cursor: 'pointer',
-            backgroundColor: '#38BDF8', color: '#0F172A',
-            transition: 'background-color 0.15s',
+            padding: '9px 20px', fontSize: '13px', fontWeight: '600',
+            border: 'none', borderRadius: '8px', cursor: 'pointer',
+            background: 'var(--gradient-accent)',
+            color: '#fff',
+            transition: 'opacity 0.15s',
           }}
-          onMouseOver={e => e.currentTarget.style.backgroundColor = '#0ea5e9'}
-          onMouseOut={e => e.currentTarget.style.backgroundColor = '#38BDF8'}
+          onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+          onMouseOut={e => e.currentTarget.style.opacity = '1'}
         >
-          Re-Establish Link
+          Retry
         </button>
       </div>
     );
@@ -228,8 +251,16 @@ export default function Dashboard() {
 
   const latestReading = readings[readings.length - 1] ?? null;
 
+  const sidebarTabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'sandbox', label: 'Predictions' },
+    { id: 'analytics', label: 'Analytics' },
+    { id: 'telemetry', label: 'Sensors' },
+    { id: 'safety', label: 'Controls' }
+  ];
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F1F5F9', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #F1F5F9 0%, #E8EEF4 40%, #F1F5F9 100%)', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column' }}>
       {/* Header Panel */}
       <Header 
         lastUpdated={latestReading?.timestamp}
@@ -242,77 +273,79 @@ export default function Dashboard() {
       <div style={{ display: 'flex', flex: 1, position: 'relative' }}>
         {/* Left Sidebar */}
         <aside style={{
-          width: '240px',
-          backgroundColor: '#0F172A',
+          width: '220px',
+          background: 'var(--gradient-sidebar)',
           color: '#fff',
-          borderRight: '1px solid #1E293B',
-          padding: '24px 16px',
+          borderRight: '1px solid rgba(255,255,255,0.04)',
+          padding: '20px 12px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px',
+          gap: '4px',
           flexShrink: 0
         }}>
-          <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', paddingLeft: '8px', marginBottom: '8px', letterSpacing: '0.05em' }}>
-            Workspaces
+          <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', color: '#475569', paddingLeft: '12px', marginBottom: '8px', letterSpacing: '0.06em' }}>
+            Navigation
           </div>
-          {[
-            { id: 'overview', label: '🌍 Overview & GIS Map' },
-            { id: 'sandbox', label: '🧠 ML Model Sandbox' },
-            { id: 'analytics', label: '📊 Telemetry Analytics' },
-            { id: 'telemetry', label: '🎛️ Sensor Database' },
-            { id: 'safety', label: '🚨 Safety & Controls' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                width: '100%',
-                textAlign: 'left',
-                padding: '10px 14px',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: '600',
-                transition: 'all 0.15s',
-                backgroundColor: activeTab === tab.id ? '#1E293B' : 'transparent',
-                color: activeTab === tab.id ? '#38BDF8' : '#94A3B8',
-              }}
-              onMouseOver={e => {
-                if (activeTab !== tab.id) {
-                  e.target.style.backgroundColor = '#1E293B';
-                  e.target.style.color = '#F8FAFC';
-                }
-              }}
-              onMouseOut={e => {
-                if (activeTab !== tab.id) {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#94A3B8';
-                }
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {sidebarTabs.map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: '10px 12px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  borderLeft: isActive ? '3px solid #0D9488' : '3px solid transparent',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: isActive ? '600' : '500',
+                  transition: 'all 0.15s',
+                  backgroundColor: isActive ? 'rgba(13, 148, 136, 0.1)' : 'transparent',
+                  color: isActive ? '#5EEAD4' : '#94A3B8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+                onMouseOver={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)';
+                    e.currentTarget.style.color = '#CBD5E1';
+                  }
+                }}
+                onMouseOut={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#94A3B8';
+                  }
+                }}
+              >
+                <SidebarIcon type={tab.id} active={isActive} />
+                {tab.label}
+              </button>
+            );
+          })}
 
-          {/* Collateral system health summary in sidebar */}
-          <div style={{ marginTop: 'auto', borderTop: '1px solid #1E293B', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>SYSTEM STATUS</div>
+          {/* System status in sidebar */}
+          <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ fontSize: '10px', color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Status</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#10B981' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }} />
-              API: 127.0.0.1 (Live)
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', animation: 'pulse-dot 2s ease-in-out infinite' }} />
+              API Connected
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: activeAlerts.length > 0 ? '#EF4444' : '#10B981' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: activeAlerts.length > 0 ? '#EF4444' : '#10B981', display: 'inline-block' }} />
-              {activeAlerts.length > 0 ? `${activeAlerts.length} Active Alert(s)` : 'Systems Nominal'}
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: activeAlerts.length > 0 ? '#EF4444' : '#10B981', display: 'inline-block' }} />
+              {activeAlerts.length > 0 ? `${activeAlerts.length} Alert${activeAlerts.length > 1 ? 's' : ''}` : 'All Clear'}
             </div>
           </div>
         </aside>
 
         {/* Main Content Workspace */}
-        <main style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto', maxHeight: 'calc(100vh - 70px)' }}>
+        <main style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto', maxHeight: 'calc(100vh - 62px)' }}>
           
-          {/* KPI TOP METRICS CARDS (Always visible at the top of every tab, providing continuous situational awareness) */}
+          {/* KPI TOP METRICS CARDS */}
           {latestReading && summary && (
             <div style={{
               display: 'grid',
@@ -320,7 +353,7 @@ export default function Dashboard() {
               gap: '16px'
             }}>
               <MetricCard
-                label="Overall Eco Score"
+                label="Eco Score"
                 value={summary.environmental_score}
                 unit="/100"
                 status={summary.environmental_score >= 75 ? 'SAFE' : 'UNSAFE'}
@@ -355,7 +388,7 @@ export default function Dashboard() {
               <MetricCard
                 label="Active Alerts"
                 value={activeAlerts.length}
-                unit="logs"
+                unit=""
                 status={activeAlerts.length === 0 ? 'SAFE' : 'UNSAFE'}
                 max={0}
               />
@@ -372,22 +405,27 @@ export default function Dashboard() {
                 onSelectLocation={handleLocationChange} 
               />
 
-              {/* Embedded AI Assistant Chat Panel */}
+              {/* Embedded Chat Panel */}
               <div style={{
                 backgroundColor: '#fff',
                 border: '1px solid var(--color-border)',
                 borderRadius: '12px',
-                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+                boxShadow: 'var(--shadow-md)',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
                 height: '520px',
               }}>
-                <div style={{ backgroundColor: '#0F172A', color: '#fff', padding: '14px 16px', borderBottom: '1px solid #1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>🤖</span>
+                <div style={{ background: 'var(--gradient-header)', color: '#fff', padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {/* Chat icon */}
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'var(--gradient-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                  </div>
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: '700' }}>AI assistant console</div>
-                    <div style={{ fontSize: '9px', color: '#94A3B8' }}>Inquiry desk for {selectedLocation}</div>
+                    <div style={{ fontSize: '13px', fontWeight: '700' }}>Ask EcoSphere</div>
+                    <div style={{ fontSize: '10px', color: '#94A3B8' }}>Sector: {selectedLocation}</div>
                   </div>
                 </div>
                 
@@ -398,11 +436,12 @@ export default function Dashboard() {
                         maxWidth: '85%',
                         backgroundColor: msg.role === 'user' ? '#0F172A' : '#fff',
                         color: msg.role === 'user' ? '#fff' : 'var(--color-text-primary)',
-                        padding: '8px 12px',
-                        borderRadius: '8px',
+                        padding: '9px 13px',
+                        borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '12px 12px 12px 3px',
                         fontSize: '12.5px',
                         lineHeight: '1.5',
                         border: msg.role === 'assistant' ? '1px solid var(--color-border)' : 'none',
+                        boxShadow: msg.role === 'assistant' ? '0 1px 2px rgba(0,0,0,0.04)' : 'none',
                       }}>
                         {msg.text}
                       </div>
@@ -438,15 +477,18 @@ export default function Dashboard() {
                     onClick={handleEmbeddedChatSend}
                     disabled={chatLoading || !chatInput.trim()}
                     style={{
-                      padding: '6px 14px',
+                      padding: '6px 16px',
                       fontSize: '12px',
-                      fontWeight: '700',
+                      fontWeight: '600',
                       border: 'none',
                       borderRadius: '8px',
                       cursor: chatInput.trim() ? 'pointer' : 'not-allowed',
-                      backgroundColor: chatInput.trim() ? '#0F172A' : '#94A3B8',
+                      background: chatInput.trim() ? 'var(--gradient-accent)' : '#CBD5E1',
                       color: '#fff',
+                      transition: 'opacity 0.15s',
                     }}
+                    onMouseOver={e => { if (chatInput.trim()) e.currentTarget.style.opacity = '0.85'; }}
+                    onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
                   >
                     Send
                   </button>
@@ -491,7 +533,7 @@ export default function Dashboard() {
                   border: '1px solid var(--color-border)',
                   borderRadius: '12px',
                   padding: '20px',
-                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+                  boxShadow: 'var(--shadow-md)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '16px',
@@ -500,10 +542,10 @@ export default function Dashboard() {
                 }}>
                   <div>
                     <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-primary)' }}>
-                      🖨 Environmental Reports Console
+                      Reports
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                      Auto-generate compliance reporting audits
+                      Generate compliance and audit reports
                     </div>
                   </div>
 
@@ -511,22 +553,26 @@ export default function Dashboard() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                       <button
                         onClick={() => handleReportDownload('weekly', 'csv')}
-                        style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#fff', fontSize: '12px', fontWeight: '600' }}
+                        style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#fff', fontSize: '12px', fontWeight: '600', transition: 'all 0.15s' }}
+                        onMouseOver={e => { e.currentTarget.style.borderColor = '#0D9488'; e.currentTarget.style.color = '#0D9488'; }}
+                        onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'inherit'; }}
                       >
-                        📥 Export CSV
+                        Export CSV
                       </button>
                       <button
                         onClick={() => handleReportDownload('csr', 'pdf')}
-                        style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#fff', fontSize: '12px', fontWeight: '600' }}
+                        style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#fff', fontSize: '12px', fontWeight: '600', transition: 'all 0.15s' }}
+                        onMouseOver={e => { e.currentTarget.style.borderColor = '#0D9488'; e.currentTarget.style.color = '#0D9488'; }}
+                        onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'inherit'; }}
                       >
-                        📄 Download PDF
+                        Download PDF
                       </button>
                     </div>
 
                     {[
                       { type: 'weekly', title: 'Weekly Operational Audit', desc: 'Summary of 24h average thresholds' },
-                      { type: 'monthly', title: 'Monthly ESG Scorecard', desc: 'Targeting SDG carbon footprint rates' },
-                      { type: 'compliance', title: 'EPA Regulatory Compliance', desc: 'Verification of pH, TDS & PM boundaries' }
+                      { type: 'monthly', title: 'Monthly ESG Scorecard', desc: 'Carbon footprint and SDG targets' },
+                      { type: 'compliance', title: 'Regulatory Compliance', desc: 'pH, TDS & PM boundary checks' }
                     ].map(rep => (
                       <div
                         key={rep.type}
@@ -534,22 +580,24 @@ export default function Dashboard() {
                         style={{
                           border: '1px solid var(--color-border)',
                           borderRadius: '8px',
-                          padding: '10px',
+                          padding: '10px 12px',
                           cursor: 'pointer',
                           backgroundColor: '#FAFAFA',
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
-                          transition: 'background-color 0.15s'
+                          transition: 'all 0.15s'
                         }}
-                        onMouseOver={e => e.currentTarget.style.backgroundColor = '#F1F5F9'}
-                        onMouseOut={e => e.currentTarget.style.backgroundColor = '#FAFAFA'}
+                        onMouseOver={e => { e.currentTarget.style.backgroundColor = '#F1F5F9'; e.currentTarget.style.borderColor = '#CBD5E1'; }}
+                        onMouseOut={e => { e.currentTarget.style.backgroundColor = '#FAFAFA'; e.currentTarget.style.borderColor = 'var(--color-border)'; }}
                       >
                         <div>
                           <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text-primary)' }}>{rep.title}</div>
                           <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>{rep.desc}</div>
                         </div>
-                        <span style={{ fontSize: '16px' }}>⚡</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="9 18 15 12 9 6"/>
+                        </svg>
                       </div>
                     ))}
                   </div>
@@ -561,30 +609,30 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* Raw / Synthetic Telemetry Database Table */}
+              {/* Raw Telemetry Database Table */}
               <div style={{
                 backgroundColor: '#fff',
                 border: '1px solid var(--color-border)',
                 borderRadius: '12px',
                 padding: '20px',
-                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+                boxShadow: 'var(--shadow-md)'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>📊 Historical Telemetry Logger</h3>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Telemetry Log</h3>
                     <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-                      Raw synthetic telemetry logs for all monitored indicators
+                      Raw sensor readings across monitored indicators
                     </p>
                   </div>
-                  <span style={{ fontSize: '11px', backgroundColor: '#F1F5F9', color: '#475569', padding: '4px 8px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>
-                    Total: {readings.length} records loaded
+                  <span style={{ fontSize: '11px', backgroundColor: '#F1F5F9', color: '#475569', padding: '4px 10px', borderRadius: '6px', fontFamily: 'var(--font-mono)' }}>
+                    {readings.length} records
                   </span>
                 </div>
 
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left' }}>
                     <thead>
-                      <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                      <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #E2E8F0' }}>
                         <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>Timestamp</th>
                         <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>AQI</th>
                         <th style={{ padding: '10px 12px', fontWeight: '600', color: '#475569' }}>PM2.5</th>
@@ -598,7 +646,10 @@ export default function Dashboard() {
                     </thead>
                     <tbody>
                       {readings.slice(-15).reverse().map((r, idx) => (
-                        <tr key={idx} style={{ borderBottom: idx < 14 ? '1px solid #F1F5F9' : 'none' }}>
+                        <tr key={idx} style={{ borderBottom: idx < 14 ? '1px solid #F1F5F9' : 'none', transition: 'background-color 0.1s' }}
+                          onMouseOver={e => e.currentTarget.style.backgroundColor = '#F8FAFC'}
+                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
                           <td style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#64748B' }}>
                             {new Date(r.timestamp).toLocaleString()}
                           </td>
@@ -622,13 +673,13 @@ export default function Dashboard() {
           {activeTab === 'safety' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                {/* Active Alerts Logs */}
+                {/* Active Alerts */}
                 <div style={{
                   backgroundColor: '#fff',
                   border: '1px solid var(--color-border)',
                   borderRadius: '12px',
                   padding: '20px',
-                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+                  boxShadow: 'var(--shadow-md)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '16px',
@@ -636,17 +687,18 @@ export default function Dashboard() {
                 }}>
                   <div>
                     <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-primary)' }}>
-                      🚨 Active Alerts Center
+                      Active Alerts
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                      Real-time critical incidents across all arrays
+                      Real-time incidents across all sectors
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', maxHeight: '230px' }}>
                     {activeAlerts.length === 0 ? (
                       <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: '50px 0', fontSize: '13px' }}>
-                        ✓ All systems operating within normal parameters.
+                        <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', marginRight: '6px' }} />
+                        All systems operating normally.
                       </div>
                     ) : (
                       activeAlerts.map(alert => (
@@ -654,14 +706,14 @@ export default function Dashboard() {
                           padding: '10px 12px',
                           borderRadius: '8px',
                           backgroundColor: alert.type === 'Critical' ? '#FEF2F2' : '#FFFBEB',
-                          borderLeft: `4px solid ${alert.type === 'Critical' ? '#EF4444' : '#F59E0B'}`,
+                          borderLeft: `3px solid ${alert.type === 'Critical' ? '#EF4444' : '#F59E0B'}`,
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '4px'
                         }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>
-                            <span style={{ color: alert.type === 'Critical' ? '#EF4444' : '#B45309' }}>{alert.type} Alert</span>
-                            <span style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)' }}>Live</span>
+                            <span style={{ color: alert.type === 'Critical' ? '#EF4444' : '#B45309' }}>{alert.type}</span>
+                            <span style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: '500' }}>Live</span>
                           </div>
                           <div style={{ fontSize: '12.5px', color: 'var(--color-text-primary)', fontWeight: '500' }}>
                             {alert.msg}
@@ -676,15 +728,15 @@ export default function Dashboard() {
                 <SustainabilityScorecard />
               </div>
 
-              {/* Admin Panel Simulation Controls */}
+              {/* Simulation Controls */}
               <div style={{
                 backgroundColor: '#fff',
                 border: '1px solid var(--color-border)',
                 borderRadius: '12px',
                 padding: '20px',
-                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+                boxShadow: 'var(--shadow-md)'
               }}>
-                <h3 style={{ margin: '0 0 16px 0', fontSize: '15px', fontWeight: '700' }}>⚙️ Hackathon Overrides & Simulation Panel</h3>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '15px', fontWeight: '700' }}>Simulation Controls</h3>
                 <AdminPanel onConfigChange={handleConfigChange} />
               </div>
 
@@ -701,14 +753,14 @@ export default function Dashboard() {
                   flexDirection: 'column',
                   gap: '12px'
                 }}>
-                  <div style={{ fontSize: '13px', fontWeight: '700', letterSpacing: '0.04em', color: '#38BDF8', textTransform: 'uppercase' }}>
-                    ✦ AI Insights Timeline & Activity Feed
+                  <div style={{ fontSize: '13px', fontWeight: '700', letterSpacing: '0.04em', color: '#5EEAD4', textTransform: 'uppercase' }}>
+                    AI Insights
                   </div>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {aiInsights.map((insight, idx) => (
                       <div key={idx} style={{ display: 'flex', gap: '12px', fontSize: '13px', borderBottom: idx < aiInsights.length - 1 ? '1px dashed #334155' : 'none', paddingBottom: '8px', alignItems: 'center' }}>
-                        <span style={{ fontFamily: 'var(--font-mono)', color: '#64748B', fontWeight: '700', flexShrink: 0 }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', color: '#64748B', fontWeight: '600', flexShrink: 0, fontSize: '11px' }}>
                           {insight.time}
                         </span>
                         <span style={{
@@ -716,8 +768,8 @@ export default function Dashboard() {
                           borderRadius: '4px',
                           fontSize: '10px',
                           fontWeight: '700',
-                          backgroundColor: insight.severity === 'CRITICAL' ? 'rgba(239, 68, 68, 0.2)' : (insight.severity === 'WARNING' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(56, 189, 248, 0.2)'),
-                          color: insight.severity === 'CRITICAL' ? '#EF4444' : (insight.severity === 'WARNING' ? '#F59E0B' : '#38BDF8'),
+                          backgroundColor: insight.severity === 'CRITICAL' ? 'rgba(239, 68, 68, 0.2)' : (insight.severity === 'WARNING' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(94, 234, 212, 0.15)'),
+                          color: insight.severity === 'CRITICAL' ? '#EF4444' : (insight.severity === 'WARNING' ? '#F59E0B' : '#5EEAD4'),
                           textTransform: 'uppercase',
                           flexShrink: 0
                         }}>

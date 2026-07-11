@@ -1,12 +1,14 @@
 :root {
-  /* Colors */
+  /* ── Primary Palette ── */
   --color-ocean-deep: #0F3B6F;
-  --color-teal: #1B9B8A;
+  --color-teal: #0D9488;
+  --color-teal-light: #14B8A6;
+  --color-emerald: #059669;
   --color-slate: #2C3E50;
   --color-light-gray: #F8FAFC;
 
   --color-text-primary: #0F172A;
-  --color-text-secondary: #475569;
+  --color-text-secondary: #64748B;
   --color-border: #E2E8F0;
   --color-bg: #FFFFFF;
 
@@ -15,12 +17,20 @@
   --color-risk: #EF4444;
   --color-info: #38BDF8;
 
-  /* Typography */
+  /* ── Accent Gradients ── */
+  --gradient-header: linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0F3B6F 100%);
+  --gradient-sidebar: linear-gradient(180deg, #0F172A 0%, #162032 100%);
+  --gradient-accent: linear-gradient(135deg, #0D9488 0%, #059669 100%);
+  --gradient-card-safe: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%);
+  --gradient-card-risk: linear-gradient(135deg, #FEF2F2 0%, #FFF1F2 100%);
+  --gradient-bubble: linear-gradient(135deg, #0D9488 0%, #0F3B6F 100%);
+
+  /* ── Typography ── */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
                'Ubuntu', 'Cantarell', sans-serif;
   --font-mono: 'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
 
-  /* Spacing */
+  /* ── Spacing ── */
   --space-xs: 8px;
   --space-sm: 12px;
   --space-md: 16px;
@@ -32,19 +42,20 @@
   --radius-lg: 16px;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
   --shadow-premium: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glow-teal: 0 0 20px rgba(13, 148, 136, 0.15);
 }
 
-/* Reset */
+/* ── Reset ── */
 *, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Base styling */
+/* ── Base ── */
 html {
   font-size: 16px;
   scroll-behavior: smooth;
@@ -54,31 +65,50 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: #F1F5F9;
+  background: linear-gradient(160deg, #F1F5F9 0%, #E8EEF4 40%, #F1F5F9 100%);
   color: var(--color-text-primary);
   line-height: 1.6;
   font-size: 14px;
   min-height: 100vh;
 }
 
-/* Dynamic Animation Utilities */
+/* ── Animations ── */
 .fade-in {
   animation: fadeIn 0.4s ease-out forwards;
 }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Custom interactive card styling */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(1.4); }
+}
+
+@keyframes dot-bounce {
+  0%, 60%, 100% { transform: scale(0.7); opacity: 0.4; }
+  30%           { transform: scale(1.0); opacity: 1.0; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+/* ── Card Styles ── */
 .premium-card {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-lg);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
 }
 
 .premium-card:hover {
@@ -86,14 +116,22 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
-/* Responsive Grid layouts */
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: var(--radius-md);
+}
+
+/* ── Grid ── */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: var(--space-xl);
 }
 
-/* Scrollbars */
+/* ── Scrollbars ── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -112,7 +150,7 @@ body {
   background: #94a3b8;
 }
 
-/* Glassmorphic alerts panel */
+/* ── Alert pills ── */
 .alert-pill {
   padding: 10px 16px;
   border-radius: var(--radius-md);
@@ -124,7 +162,7 @@ body {
   transition: all 0.2s;
 }
 
-/* Form elements custom style */
+/* ── Form elements ── */
 select, input[type="text"] {
   font-family: var(--font-sans);
   font-size: 13px;
@@ -132,6 +170,52 @@ select, input[type="text"] {
 }
 
 select:focus, input[type="text"]:focus {
-  border-color: #38BDF8 !important;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  border-color: var(--color-teal) !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
 }
+
+/* ── Range sliders ── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  border-radius: 5px;
+  background: #E2E8F0;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-teal);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-teal);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+/* ── Status accent borders ── */
+.status-safe    { border-top: 3px solid var(--color-safe); }
+.status-warning { border-top: 3px solid var(--color-monitor); }
+.status-danger  { border-top: 3px solid var(--color-risk); }

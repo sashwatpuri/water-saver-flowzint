@@ -71,12 +71,12 @@ def main():
         })
 
     # Save to JSON
-    json_filename = "aquaguard_data.json"
+    json_filename = "ecosphere_data.json"
     with open(json_filename, "w") as f:
         json.dump(readings, f, indent=2)
 
     # Save to CSV
-    csv_filename = "aquaguard_data.csv"
+    csv_filename = "ecosphere_data.csv"
     if readings:
         keys = readings[0].keys()
         with open(csv_filename, "w", newline="") as f:

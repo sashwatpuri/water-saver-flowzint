@@ -32,8 +32,8 @@ app.add_middleware(
 # File paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_PATH = os.path.join(BASE_DIR, "ecosphere_data.json")
-WATER_MODEL_PATH = os.path.join(BASE_DIR, "model", "aquaguard_model.joblib")
-WATER_SCALER_PATH = os.path.join(BASE_DIR, "model", "aquaguard_scaler.joblib")
+WATER_MODEL_PATH = os.path.join(BASE_DIR, "model", "ecosphere_model.joblib")
+WATER_SCALER_PATH = os.path.join(BASE_DIR, "model", "ecosphere_scaler.joblib")
 AIR_MODEL_PATH = os.path.join(BASE_DIR, "model", "ecosphere_air_model.joblib")
 AIR_SCALER_PATH = os.path.join(BASE_DIR, "model", "ecosphere_air_scaler.joblib")
 

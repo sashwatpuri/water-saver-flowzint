@@ -1,4 +1,4 @@
-# AquaGuard AI – Parallel Development Tracks
+# EcoSphere AI – Parallel Development Tracks
 
 You can work on these **simultaneously** (different people or time-blocks).
 
@@ -13,9 +13,9 @@ You can work on these **simultaneously** (different people or time-blocks).
 
 1. **Generate organic randomized dataset**
    ```bash
-   python aquaguard_organic_data_generator.py
+   python ecosphere_organic_data_generator.py
    ```
-   Output: `aquaguard_data.json` (720 readings, 75% SAFE, 25% UNSAFE)
+   Output: `ecosphere_data.json` (720 readings, 75% SAFE, 25% UNSAFE)
 
 2. **Set up FastAPI backend skeleton**
    ```bash
@@ -42,12 +42,12 @@ You can work on these **simultaneously** (different people or time-blocks).
    )
    
    # Load synthetic data
-   with open('../aquaguard_data.json', 'r') as f:
+   with open('../ecosphere_data.json', 'r') as f:
        ALL_DATA = json.load(f)
    
    @app.get("/")
    def root():
-       return {"status": "AquaGuard API running"}
+       return {"status": "EcoSphere API running"}
    
    @app.get("/api/readings/latest")
    def get_latest():
@@ -119,8 +119,8 @@ You can work on these **simultaneously** (different people or time-blocks).
 
 1. **Bootstrap React project**
    ```bash
-   npm create vite@latest aquaguard-frontend -- --template react
-   cd aquaguard-frontend
+   npm create vite@latest ecosphere-frontend -- --template react
+   cd ecosphere-frontend
    npm install
    ```
 
@@ -278,7 +278,7 @@ You can work on these **simultaneously** (different people or time-blocks).
        }}>
          <div>
            <h1 style={{ fontSize: 'var(--font-size-xl)', margin: 0 }}>
-             AquaGuard AI
+             EcoSphere AI
            </h1>
            <p style={{ fontSize: 'var(--font-size-sm)', opacity: 0.9, margin: 0 }}>
              Water Quality Intelligence
@@ -444,7 +444,7 @@ You can work on these **simultaneously** (different people or time-blocks).
       return (
         <div className="card" style={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
           <h2 style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--space-md)' }}>
-            AquaGuard Assistant
+            EcoSphere Assistant
           </h2>
           
           <div style={{
@@ -599,7 +599,7 @@ You can work on these **simultaneously** (different people or time-blocks).
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>AquaGuard AI – Water Quality Intelligence</title>
+        <title>EcoSphere AI – Water Quality Intelligence</title>
       </head>
       <body>
         <div id="root"></div>
@@ -825,7 +825,7 @@ You can work on these **simultaneously** (different people or time-blocks).
      return (
        <div className="card" style={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
          <h2 style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--space-md)' }}>
-           AquaGuard Assistant
+           EcoSphere Assistant
          </h2>
          
          <div style={{
@@ -921,13 +921,13 @@ You can work on these **simultaneously** (different people or time-blocks).
 
 ### Hours 1–2: Track A (Backend Data)
 ```bash
-python aquaguard_organic_data_generator.py
-# → aquaguard_data.json created
+python ecosphere_organic_data_generator.py
+# → ecosphere_data.json created
 ```
 
 ### Hours 1–4: Track B (Frontend Components) — *in parallel with Track A*
 ```bash
-npm create vite aquaguard-frontend -- --template react
+npm create vite ecosphere-frontend -- --template react
 npm install
 # → Components created, mockData.js in place
 npm run dev
@@ -953,8 +953,8 @@ npm run dev
 ### Step 1 (5 min)
 ```bash
 cd /home/claude
-python aquaguard_organic_data_generator.py
-# → Check output: aquaguard_data.json
+python ecosphere_organic_data_generator.py
+# → Check output: ecosphere_data.json
 ```
 
 ### Step 2 (30 min)

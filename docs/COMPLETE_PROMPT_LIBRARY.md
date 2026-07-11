@@ -1,4 +1,4 @@
-# AquaGuard AI – Complete Prompt Library
+# EcoSphere AI – Complete Prompt Library
 
 Copy & paste these prompts directly into Claude (web), Claude Code, or Claude Design.
 
@@ -9,7 +9,7 @@ Copy & paste these prompts directly into Claude (web), Claude Code, or Claude De
 Use this in **Claude Design** or regular Claude chat for UI design/review.
 
 ```
-You are building the UI for AquaGuard AI, a professional water quality monitoring dashboard.
+You are building the UI for EcoSphere AI, a professional water quality monitoring dashboard.
 
 DESIGN REQUIREMENTS:
 1. NOT AI-generated looking. Professional, minimal, authoritative.
@@ -55,7 +55,7 @@ Create a professional, enterprise-grade water quality monitoring dashboard that 
 Use this in **Claude Code** or regular Claude for component scaffolding.
 
 ```
-I'm building a React dashboard for water quality monitoring (AquaGuard AI).
+I'm building a React dashboard for water quality monitoring (EcoSphere AI).
 
 Create the following React components using the design system below:
 
@@ -69,7 +69,7 @@ DESIGN SYSTEM:
 COMPONENTS TO BUILD:
 
 1. Header.jsx
-   - Logo/title "AquaGuard AI" (white text on Ocean Deep)
+   - Logo/title "EcoSphere AI" (white text on Ocean Deep)
    - Location display
    - Last update timestamp
    - Props: none
@@ -134,12 +134,12 @@ Use this CSS variable system:
 Use this in **Claude Code** or regular Claude for FastAPI implementation.
 
 ```
-I need a FastAPI backend for water quality monitoring (AquaGuard AI).
+I need a FastAPI backend for water quality monitoring (EcoSphere AI).
 
 REQUIREMENTS:
 
 1. Load data:
-   - Read aquaguard_data.json (720 readings)
+   - Read ecosphere_data.json (720 readings)
    - In-memory storage (Python list/dict)
    - Each reading: {id, timestamp, pH, TDS, DO, turbidity, temperature, quality_status}
 
@@ -147,7 +147,7 @@ REQUIREMENTS:
 
    GET /
    - Health check
-   - Response: {"status": "AquaGuard API running", "total_readings": N}
+   - Response: {"status": "EcoSphere API running", "total_readings": N}
 
    GET /api/readings/latest
    - Return last 24 readings
@@ -234,7 +234,7 @@ SPECIFICATIONS:
    - Looks like real randomized sensor data, not synthetic
 
 5. Output:
-   - Save to aquaguard_data.json
+   - Save to ecosphere_data.json
    - Print statistics: count SAFE/UNSAFE, date range
    - Sample readings for verification
 
@@ -249,7 +249,7 @@ Output must be valid JSON array.
 Use this in Claude Code when connecting frontend to backend.
 
 ```
-I need to integrate a React frontend with a FastAPI backend for AquaGuard AI.
+I need to integrate a React frontend with a FastAPI backend for EcoSphere AI.
 
 FRONTEND SIDE:
 
@@ -308,7 +308,7 @@ Test the connection:
 Use this when integrating Claude API into the backend.
 
 ```
-You are AquaGuard, an intelligent water quality assistant. 
+You are EcoSphere, an intelligent water quality assistant. 
 
 Your role:
 - Answer questions about water quality using real-time monitoring data
@@ -375,9 +375,9 @@ STEPS:
    - Root directory: /backend
    - Build command: pip install -r requirements.txt
    - Start command: uvicorn main:app --host 0.0.0.0 --port 8000
-5. Deploy and get URL (e.g., https://aquaguard-backend-xxx.railway.app)
+5. Deploy and get URL (e.g., https://ecosphere-backend-xxx.railway.app)
 
-Then test: curl https://aquaguard-backend-xxx.railway.app/api/readings/summary
+Then test: curl https://ecosphere-backend-xxx.railway.app/api/readings/summary
 ```
 
 ### **Vercel Frontend Deployment**
@@ -393,8 +393,8 @@ STEPS:
    - Build command: npm run build
    - Output directory: dist
 4. Environment variables:
-   - REACT_APP_API_URL=https://aquaguard-backend-xxx.railway.app
-5. Deploy and get URL (e.g., https://aquaguard-ai.vercel.app)
+   - REACT_APP_API_URL=https://ecosphere-backend-xxx.railway.app
+5. Deploy and get URL (e.g., https://ecosphere-ai.vercel.app)
 
 Then test: Open URL and verify data loads
 ```
@@ -406,7 +406,7 @@ Then test: Open URL and verify data loads
 Use this to write professional GitHub documentation.
 
 ```
-Write a professional GitHub README for AquaGuard AI water quality monitoring platform.
+Write a professional GitHub README for EcoSphere AI water quality monitoring platform.
 
 Include:
 1. Title + description (1 sentence pitch)
@@ -433,7 +433,7 @@ Include setup instructions someone can follow in 5 minutes
 Use this to write a clear demo walkthrough.
 
 ```
-Write a 3-4 minute demo video script for AquaGuard AI.
+Write a 3-4 minute demo video script for EcoSphere AI.
 
 Structure:
 - 0:00-0:30: Problem statement + solution pitch
@@ -465,12 +465,12 @@ Key points to hit:
 Use this to verify everything works before submission.
 
 ```
-Create a testing checklist for AquaGuard AI hackathon submission.
+Create a testing checklist for EcoSphere AI hackathon submission.
 
 Test categories:
 
 DATA LAYER:
-- [ ] aquaguard_data.json exists and has 720 readings
+- [ ] ecosphere_data.json exists and has 720 readings
 - [ ] Each reading has all required fields
 - [ ] Quality_status is SAFE or UNSAFE (binary)
 - [ ] Timestamps are sequential

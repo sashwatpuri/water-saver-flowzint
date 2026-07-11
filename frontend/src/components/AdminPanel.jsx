@@ -64,10 +64,10 @@ export default function AdminPanel({ onConfigChange }) {
       {/* Header */}
       <div>
         <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-primary)' }}>
-          🛠 Admin Control Deck & Event Simulator
+          Simulation Controls
         </div>
         <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-          Simulate incidents to test real-time AI warnings & map alerts
+          Simulate incidents to test alerts and map responses
         </div>
       </div>
 

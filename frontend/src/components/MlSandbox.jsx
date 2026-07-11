@@ -120,10 +120,10 @@ export default function MlSandbox({ selectedLocation, currentTelemetry }) {
       }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-            🧠 Machine Learning Sandbox
+            Prediction Lab
           </h2>
           <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--color-text-secondary)' }}>
-            Manually enter environmental features to test predictions against trained estimators
+            Adjust environmental inputs to test model predictions
           </p>
         </div>
         <button
@@ -142,7 +142,7 @@ export default function MlSandbox({ selectedLocation, currentTelemetry }) {
           onMouseOver={(e) => e.target.style.backgroundColor = '#1E293B'}
           onMouseOut={(e) => e.target.style.backgroundColor = '#0F172A'}
         >
-          🔄 Pull Live Data ({selectedLocation})
+          🔄 Sync Live Data ({selectedLocation})
         </button>
       </div>
 
@@ -161,9 +161,9 @@ export default function MlSandbox({ selectedLocation, currentTelemetry }) {
         }}>
           <div>
             <span style={{ fontSize: '20px' }}>🌫️</span>
-            <h3 style={{ margin: '8px 0 0 0', fontSize: '16px', fontWeight: 700 }}>24-Hour Air Quality Forecast</h3>
+            <h3 style={{ margin: '8px 0 0 0', fontSize: '16px', fontWeight: 700 }}>Air Quality Forecast</h3>
             <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-              Uses Random Forest Regressor to forecast tomorrow's AQI
+              Predicts tomorrow's AQI using a Random Forest model
             </p>
           </div>
 
@@ -228,7 +228,7 @@ export default function MlSandbox({ selectedLocation, currentTelemetry }) {
               marginTop: '10px'
             }}
           >
-            {airLoading ? 'Analyzing Estimators...' : 'Compute AQI Forecast'}
+            {airLoading ? 'Analyzing...' : 'Run Air Forecast'}
           </button>
 
           {/* Results Panel */}
@@ -244,7 +244,7 @@ export default function MlSandbox({ selectedLocation, currentTelemetry }) {
               gap: '12px'
             }}>
               <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', fontWeight: 700 }}>
-                🔮 ML Regressor Output
+                Prediction Result
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
@@ -252,7 +252,7 @@ export default function MlSandbox({ selectedLocation, currentTelemetry }) {
                     {airResult.predicted_aqi}
                   </div>
                   <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
-                    Forecasted 24h Future AQI
+                    Forecasted AQI (next 24h)
                   </div>
                 </div>
                 <div style={{
@@ -287,9 +287,9 @@ export default function MlSandbox({ selectedLocation, currentTelemetry }) {
         }}>
           <div>
             <span style={{ fontSize: '20px' }}>💧</span>
-            <h3 style={{ margin: '8px 0 0 0', fontSize: '16px', fontWeight: 700 }}>Water Quality Classifier</h3>
+            <h3 style={{ margin: '8px 0 0 0', fontSize: '16px', fontWeight: 700 }}>Water Safety Classifier</h3>
             <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-              Uses XGBoost Classifier to categorize safety (SAFE/UNSAFE)
+              Classifies water as Safe or Unsafe using XGBoost
             </p>
           </div>
 
@@ -348,7 +348,7 @@ export default function MlSandbox({ selectedLocation, currentTelemetry }) {
               marginTop: '10px'
             }}
           >
-            {waterLoading ? 'Analyzing Classifier...' : 'Compute Safety Assessment'}
+            {waterLoading ? 'Analyzing...' : 'Run Safety Check'}
           </button>
 
           {/* Results Panel */}
@@ -364,7 +364,7 @@ export default function MlSandbox({ selectedLocation, currentTelemetry }) {
               gap: '12px'
             }}>
               <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', fontWeight: 700 }}>
-                🛡️ ML Classifier Output
+                Safety Result
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>

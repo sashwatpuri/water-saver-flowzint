@@ -1,8 +1,8 @@
-# AquaGuard AI – Complete Hackathon Package
+# EcoSphere AI – Complete Hackathon Package
 
 ## What You're Building
 
-**Project:** AquaGuard AI – Water Quality Intelligence Platform  
+**Project:** EcoSphere AI – Water Quality Intelligence Platform  
 **Hackathon:** FlowZint AI (July 4 deadline)  
 **Deliverables:** GitHub repo + video link + live demo  
 **Timeline:** 7 days (start now)  
@@ -12,11 +12,11 @@
 ## Files Created (Copy from `/home/claude/`)
 
 1. **`DESIGN_SYSTEM.md`** – Color palette, typography, component guidelines
-2. **`aquaguard_organic_data_generator.py`** – Generates 720 realistic readings (SAFE/UNSAFE)
+2. **`ecosphere_organic_data_generator.py`** – Generates 720 realistic readings (SAFE/UNSAFE)
 3. **`TRACKS_A_B_C.md`** – Detailed parallel work breakdown (3 tracks)
 4. **`QUICK_START.md`** – Copy-paste commands to get running in 3 hours
-5. **`aquaguard_synthetic_data_generator.py`** – Alternative generator (patterns-based, for reference)
-6. **`AQUAGUARD_HACKATHON_PLAN.md`** – 7-day phased roadmap
+5. **`ecosphere_synthetic_data_generator.py`** – Alternative generator (patterns-based, for reference)
+6. **`ECOSPHERE_HACKATHON_PLAN.md`** – 7-day phased roadmap
 
 ---
 
@@ -109,7 +109,7 @@
 backend/
 ├── main.py (FastAPI app)
 ├── requirements.txt
-└── ../aquaguard_data.json (720 readings)
+└── ../ecosphere_data.json (720 readings)
 ```
 
 **Test:**
@@ -258,7 +258,7 @@ Returns Claude's response with data context
 cd backend
 railway init
 railway up
-# Get URL: https://aquaguard-backend-xxx.railway.app
+# Get URL: https://ecosphere-backend-xxx.railway.app
 ```
 
 ### Frontend (Vercel)
@@ -266,13 +266,13 @@ railway up
 cd frontend
 npm run build
 vercel
-# Get URL: https://aquaguard-ai.vercel.app
+# Get URL: https://ecosphere-ai.vercel.app
 ```
 
 ### Environment Variables
 **Frontend (.env.local):**
 ```
-REACT_APP_API_URL=https://aquaguard-backend-xxx.railway.app
+REACT_APP_API_URL=https://ecosphere-backend-xxx.railway.app
 ```
 
 **Backend (.env):**
@@ -286,7 +286,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 ## Video Script (3–4 min)
 
 **0:00–0:30** – Problem & Solution  
-> "Water quality dashboards exist, but they're just numbers. AquaGuard AI predicts conditions and recommends actions through conversational AI."
+> "Water quality dashboards exist, but they're just numbers. EcoSphere AI predicts conditions and recommends actions through conversational AI."
 
 **0:30–1:30** – Live Demo  
 > Show dashboard updating, alert banner, chart trending
@@ -305,7 +305,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 ## GitHub README (Template)
 
 ```markdown
-# AquaGuard AI – Water Quality Intelligence Platform
+# EcoSphere AI – Water Quality Intelligence Platform
 
 Water quality monitoring made smart. Real-time analysis + AI recommendations.
 

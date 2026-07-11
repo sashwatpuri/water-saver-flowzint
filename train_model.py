@@ -1,8 +1,8 @@
 """
-AquaGuard AI - Model Training Script
+EcoSphere AI - Model Training Script
 =====================================
 Trains and compares Random Forest vs XGBoost for binary water quality
-classification (SAFE / UNSAFE) on aquaguard_data.csv.
+classification (SAFE / UNSAFE) on ecosphere_data.csv.
 
 Applies Feature Scaling (StandardScaler) and saves the scaler along with 
 the winning model. Produces diagnostic visualizations.
@@ -35,7 +35,7 @@ warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------
 # Config
 # --------------------------------------------------------------------------
-CSV_PATH     = "aquaguard_data.csv"
+CSV_PATH     = "ecosphere_data.csv"
 MODEL_DIR    = "model"
 FEATURES     = ["pH", "TDS", "DO", "turbidity", "temperature"]
 TARGET       = "quality_status"
@@ -52,7 +52,7 @@ DASH = "-" * 62
 # 1. Load dataset
 # --------------------------------------------------------------------------
 print(SEP)
-print("  AquaGuard AI - Model Training")
+print("  EcoSphere AI - Model Training")
 print(SEP)
 
 df = pd.read_csv(CSV_PATH)
@@ -189,8 +189,8 @@ print(f"  F1 lead : {f1_margin:+.4f} over {runner_up}")
 # --------------------------------------------------------------------------
 # 6. Save winner & scaler
 # --------------------------------------------------------------------------
-MODEL_PATH    = os.path.join(MODEL_DIR, "aquaguard_model.joblib")
-SCALER_PATH   = os.path.join(MODEL_DIR, "aquaguard_scaler.joblib")
+MODEL_PATH    = os.path.join(MODEL_DIR, "ecosphere_model.joblib")
+SCALER_PATH   = os.path.join(MODEL_DIR, "ecosphere_scaler.joblib")
 METADATA_PATH = os.path.join(MODEL_DIR, "model_metadata.json")
 
 joblib.dump(best["model"], MODEL_PATH, compress=3)

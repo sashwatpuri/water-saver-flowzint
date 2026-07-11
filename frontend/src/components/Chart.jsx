@@ -50,10 +50,10 @@ export default function Chart({ historicalData, forecastData, locationName, defa
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-primary)' }}>
-            Environmental Telemetry & AI Forecasts
+            Environmental Trends
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-            Location: {locationName} · {activeTab === 'forecast' ? '7-day ML Projection' : '24-hour sensor stream'}
+            {locationName} · {activeTab === 'forecast' ? '7-day forecast' : 'Last 24 hours'}
           </div>
         </div>
 
@@ -62,7 +62,7 @@ export default function Chart({ historicalData, forecastData, locationName, defa
           {[
             { id: 'air', label: 'Air Telemetry' },
             { id: 'water', label: 'Water Telemetry' },
-            { id: 'forecast', label: 'AI Predictor' }
+            { id: 'forecast', label: 'Forecast' }
           ].map(tab => (
             <button
               key={tab.id}

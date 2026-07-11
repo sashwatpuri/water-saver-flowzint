@@ -28,10 +28,10 @@ export default function RecommendationsList({ recommendations }) {
     }}>
       <div>
         <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-primary)' }}>
-          AI Recommendations Engine
+          Recommendations
         </div>
         <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-          Autonomous actions determined from real-time values & forecasts
+          Suggested actions based on current conditions
         </div>
       </div>
 

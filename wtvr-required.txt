@@ -63,7 +63,7 @@ predictive AI, chatbot interfaces, geospatial twin mapping, and automated alert/
 
 A. DATA STORAGE & STREAMING LAYER
    - Database / Data Files:
-     * `aquaguard_data.json` & `aquaguard_data.csv`: Continuous hourly history (7200 rows) 
+     * `ecosphere_data.json` & `ecosphere_data.csv`: Continuous hourly history (7200 rows) 
        representing a year of historical water parameters (pH, TDS, DO, turbidity, temperature).
      * `ecosphere_air_data.json` & `ecosphere_air_data.csv` (To Be Generated): Year-long 
        hourly history for air quality parameters: AQI, PM2.5, PM10, CO, NO2, SO2, O3, 
@@ -95,7 +95,7 @@ B. BACKEND (FASTAPI / PYTHON 3.10+)
      * `/api/admin/config`: Endpoint to update thresholds, configure sensors, and configure alerts.
 
 C. MACHINE LEARNING ENGINE
-   - Water Quality Model: XGBoost classifier (`aquaguard_model.joblib`) classifying WQI (SAFE/UNSAFE).
+   - Water Quality Model: XGBoost classifier (`ecosphere_model.joblib`) classifying WQI (SAFE/UNSAFE).
    - Air Quality Model: XGBoost regressor predicting future hourly AQI based on lagged pollutants, 
      traffic index, and weather features.
    - Forecast Pipeline: Uses rolling windows and lag features to predict 7-day trends.

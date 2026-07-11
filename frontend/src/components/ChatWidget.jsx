@@ -105,21 +105,22 @@ export default function ChatWidget({ selectedLocation }) {
             {/* Logo */}
             <div style={{
               width: '28px', height: '28px',
-              border: '1.5px solid #38BDF8',
               borderRadius: '6px',
-              backgroundColor: 'rgba(56, 189, 248, 0.08)',
+              background: 'var(--gradient-accent)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '12px', fontWeight: '800',
-              color: '#38BDF8', flexShrink: 0,
+              flexShrink: 0,
             }}>
-              🌍
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66L12 14" />
+                <path d="M17 8c.74-3.54 2.8-5.12 5-6-1.12 2.2-2.46 4.46-6 5" />
+              </svg>
             </div>
             <div>
               <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff', lineHeight: 1.2 }}>
-                EcoSphere Assistant
+                Ask EcoSphere
               </div>
               <div style={{ fontSize: '10px', color: '#64748B', marginTop: '1px' }}>
-                AI Environmental Copilot
+                Environmental Assistant
               </div>
             </div>
           </div>
@@ -264,7 +265,8 @@ export default function ChatWidget({ selectedLocation }) {
           width: '56px', height: '56px',
           borderRadius: '50%',
           border: 'none',
-          backgroundColor: '#0F172A',
+          backgroundColor: 'transparent',
+          background: 'var(--gradient-bubble)',
           color: '#fff',
           cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -273,18 +275,23 @@ export default function ChatWidget({ selectedLocation }) {
           transition: 'transform 0.15s, background-color 0.15s',
         }}
         onMouseOver={e => {
-          e.currentTarget.style.backgroundColor = '#1E293B';
+          e.currentTarget.style.opacity = '0.9';
           e.currentTarget.style.transform = 'scale(1.05)';
         }}
         onMouseOut={e  => {
-          e.currentTarget.style.backgroundColor = '#0F172A';
+          e.currentTarget.style.opacity = '1';
           e.currentTarget.style.transform = 'scale(1)';
         }}
       >
         {open ? (
           <span style={{ fontSize: '24px', lineHeight: 1 }}>×</span>
         ) : (
-          <span style={{ fontSize: '22px' }}>🌍</span>
+          <span style={{ fontSize: '22px' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66L12 14" />
+              <path d="M17 8c.74-3.54 2.8-5.12 5-6-1.12 2.2-2.46 4.46-6 5" />
+            </svg>
+          </span>
         )}
 
         {unread > 0 && !open && (

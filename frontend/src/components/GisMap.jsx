@@ -175,10 +175,10 @@ export default function GisMap({ locations, selectedLocation, onSelectLocation }
         <div>
           <div style={{ fontSize: '16px', fontWeight: '700', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#38BDF8', boxShadow: '0 0 8px #38BDF8' }} />
-            Geospatial Digital Twin (OpenStreetMap GIS Grid)
+            Sensor Map
           </div>
           <div style={{ fontSize: '12px', color: '#94A3B8', marginTop: '2px' }}>
-            Active geographic telemetry monitoring. Click status markers to query sensor node data
+            Click a marker to inspect sensor data
           </div>
         </div>
       </div>

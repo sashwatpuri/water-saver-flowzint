@@ -6,7 +6,7 @@
 
 **STEP 1A: Generate data (5 min)**
 ```bash
-python aquaguard_organic_data_generator.py
+python ecosphere_organic_data_generator.py
 ```
 ✅ Done. No prompt needed (already have script).
 
@@ -15,7 +15,7 @@ python aquaguard_organic_data_generator.py
 Copy **PART 3: BACKEND API PROMPT** from COMPLETE_PROMPT_LIBRARY.md and paste into Claude Code or this chat:
 
 ```
-I need a FastAPI backend for water quality monitoring (AquaGuard AI).
+I need a FastAPI backend for water quality monitoring (EcoSphere AI).
 REQUIREMENTS: [see PART 3]
 ```
 
@@ -42,7 +42,7 @@ curl http://localhost:8000/api/readings/summary
 Copy **PART 2: REACT COMPONENTS PROMPT** from COMPLETE_PROMPT_LIBRARY.md and paste into Claude Code:
 
 ```
-I'm building a React dashboard for water quality monitoring (AquaGuard AI).
+I'm building a React dashboard for water quality monitoring (EcoSphere AI).
 [see PART 2]
 ```
 
@@ -74,7 +74,7 @@ npm run dev
 Copy **PART 5: API INTEGRATION PROMPT** from COMPLETE_PROMPT_LIBRARY.md and paste into Claude Code:
 
 ```
-I need to integrate a React frontend with a FastAPI backend for AquaGuard AI.
+I need to integrate a React frontend with a FastAPI backend for EcoSphere AI.
 [see PART 5]
 ```
 
@@ -100,7 +100,7 @@ Apply changes and test:
 Use **PART 1: FRONTEND DESIGN PROMPT** to review/refine:
 
 ```
-Review this React dashboard against the AquaGuard AI design system:
+Review this React dashboard against the EcoSphere AI design system:
 [Copy your Dashboard.jsx or describe what you built]
 
 Does it match the design? Any issues?
@@ -126,7 +126,7 @@ Go through each item and mark completed
 Create a test document:
 ```
 DATA LAYER:
-- [x] aquaguard_data.json exists
+- [x] ecosphere_data.json exists
 - [x] 720 readings with all fields
 - [ ] ... (continue checking)
 ```
@@ -145,7 +145,7 @@ In your `backend/main.py`, add:
 from anthropic import Anthropic
 
 # Copy PART 6 as system prompt
-SYSTEM_PROMPT = """You are AquaGuard, an intelligent water quality assistant..."""
+SYSTEM_PROMPT = """You are EcoSphere, an intelligent water quality assistant..."""
 
 @app.post("/api/chat")
 async def chat(message: str):
@@ -176,7 +176,7 @@ Use **PART 7: Railway Backend Deployment**:
 
 ```
 Follow the Railway deployment steps from PART 7
-Get live URL: https://aquaguard-backend-xxx.railway.app
+Get live URL: https://ecosphere-backend-xxx.railway.app
 ```
 
 ### **Deploy Frontend**
@@ -185,7 +185,7 @@ Use **PART 7: Vercel Frontend Deployment**:
 
 ```
 Follow the Vercel deployment steps from PART 7
-Get live URL: https://aquaguard-ai.vercel.app
+Get live URL: https://ecosphere-ai.vercel.app
 ```
 
 ---
@@ -197,7 +197,7 @@ Get live URL: https://aquaguard-ai.vercel.app
 Use **PART 8: README/DOCUMENTATION PROMPT**:
 
 ```
-Write a professional GitHub README for AquaGuard AI...
+Write a professional GitHub README for EcoSphere AI...
 [Copy PART 8]
 ```
 
@@ -208,7 +208,7 @@ Paste result into `README.md`
 Use **PART 9: VIDEO SCRIPT PROMPT**:
 
 ```
-Write a 3-4 minute demo video script for AquaGuard AI...
+Write a 3-4 minute demo video script for EcoSphere AI...
 [Copy PART 9]
 ```
 
@@ -252,7 +252,7 @@ Execute prompts in this order:
 ### **Template 1: Building React Components**
 
 ```
-I'm building a React component for AquaGuard AI water quality dashboard.
+I'm building a React component for EcoSphere AI water quality dashboard.
 
 Component name: [MetricCard / AlertBanner / etc]
 Props needed: [list props]
@@ -276,7 +276,7 @@ Write the complete JSX component code.
 ### **Template 2: Asking Claude for Help**
 
 ```
-I'm building AquaGuard AI and stuck on [specific problem].
+I'm building EcoSphere AI and stuck on [specific problem].
 
 Current code:
 [Paste your code]
@@ -296,7 +296,7 @@ Using PART [N] from the prompt library - can you help?
 ### **Template 3: Code Review**
 
 ```
-I built this component/endpoint using [PART N] from the AquaGuard prompt library.
+I built this component/endpoint using [PART N] from the EcoSphere prompt library.
 
 Code:
 [Paste your code]

@@ -1,4 +1,4 @@
-# AquaGuard AI
+# EcoSphere AI
 
 > Real-time water quality monitoring with AI-powered analysis — built for municipalities, campuses, and industrial facilities that treat water safety as non-negotiable.
 
@@ -59,7 +59,7 @@ cp backend/.env.example backend/.env
 py data-generation.py
 ```
 
-This creates `aquaguard_data.json` and `aquaguard_data.csv` with 7,200 realistic sensor readings.
+This creates `ecosphere_data.json` and `ecosphere_data.csv` with 7,200 realistic sensor readings.
 
 ### 4 · Start the backend
 
@@ -138,13 +138,13 @@ water-saver-flowzint/
 │   ├── SUMMARY.md               # Project overview
 │   ├── QUICK_START.md           # Extended setup guide
 │   ├── TRACKS_A_B_C.md          # Hackathon track breakdown
-│   ├── AQUAGUARD_DESIGN_SYSTEM.md
+│   ├── ECOSPHERE_DESIGN_SYSTEM.md
 │   ├── COMPLETE_PROMPT_LIBRARY.md
 │   └── PROMPT_QUICK_REFERENCE.md
 │
-├── data-generation.py       # Generates aquaguard_data.json + .csv (7,200 rows)
-├── aquaguard_data.json      # Generated sensor dataset (not committed — run script)
-├── aquaguard_data.csv       # CSV version of the same dataset
+├── data-generation.py       # Generates ecosphere_data.json + .csv (7,200 rows)
+├── ecosphere_data.json      # Generated sensor dataset (not committed — run script)
+├── ecosphere_data.csv       # CSV version of the same dataset
 └── README.md
 ```
 
@@ -175,8 +175,8 @@ py data-generation.py
 ```
 
 **Output:**
-- `aquaguard_data.json` — 7,200 readings, 30 days at hourly intervals
-- `aquaguard_data.csv` — same data in CSV format for analysis
+- `ecosphere_data.json` — 7,200 readings, 30 days at hourly intervals
+- `ecosphere_data.csv` — same data in CSV format for analysis
 
 **Classification rules (applied during generation):**
 

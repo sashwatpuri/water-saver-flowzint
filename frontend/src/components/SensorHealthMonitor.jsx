@@ -26,7 +26,7 @@ export default function SensorHealthMonitor({ data }) {
             IoT Sensor Diagnostics
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-            Real-time health telemetry across 18 active nodes
+            Health telemetry across {totalCount} sensor nodes
           </div>
         </div>
 

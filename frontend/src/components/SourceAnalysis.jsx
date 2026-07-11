@@ -23,7 +23,7 @@ export default function SourceAnalysis({ data, explanation }) {
       minHeight: '340px',
     }}>
       <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-primary)' }}>
-        Pollution Source Analysis (AI Agent Core)
+        Pollution Sources
       </div>
 
       <div style={{ display: 'flex', flex: 1, gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -89,7 +89,7 @@ export default function SourceAnalysis({ data, explanation }) {
         fontStyle: 'italic',
       }}>
         <div style={{ fontWeight: '700', fontSize: '11px', color: 'var(--color-ocean-deep)', textTransform: 'uppercase', marginBottom: '4px', fontStyle: 'normal' }}>
-          ✦ Agentic Observation Core
+          AI Analysis
         </div>
         "{explanation || 'Analyzing local pollutant variables...'}"
       </div>

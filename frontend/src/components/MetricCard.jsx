@@ -20,29 +20,42 @@ export default function MetricCard({ label, value, unit, status, min, max }) {
   else if (max !== undefined)                 rangeText = `≤ ${max}`;
 
   const displayValue = value !== undefined && value !== null
-    ? (typeof value === 'number' ? value.toFixed(2) : value)
+    ? (typeof value === 'number' ? value.toFixed(1) : value)
     : '—';
+
+  const accentColor = isSafe ? 'var(--color-safe)' : 'var(--color-risk)';
 
   return (
     <div style={{
       backgroundColor: '#fff',
       border: '1px solid var(--color-border)',
-      borderRadius: '8px',
+      borderTop: `3px solid ${accentColor}`,
+      borderRadius: '10px',
       padding: 'var(--space-lg)',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+      boxShadow: 'var(--shadow-sm)',
       display: 'flex',
       flexDirection: 'column',
-      gap: 'var(--space-xs)',
+      gap: '6px',
       minHeight: '132px',
-    }}>
+      transition: 'transform 0.2s ease, box-shadow 0.25s ease',
+    }}
+      onMouseOver={e => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+      }}
+      onMouseOut={e => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+      }}
+    >
 
       {/* Label */}
       <div style={{
-        fontSize: '12px',
-        fontWeight: '500',
+        fontSize: '11px',
+        fontWeight: '600',
         color: 'var(--color-text-secondary)',
         textTransform: 'uppercase',
-        letterSpacing: '0.07em',
+        letterSpacing: '0.06em',
         lineHeight: 1,
       }}>
         {label}
@@ -50,20 +63,20 @@ export default function MetricCard({ label, value, unit, status, min, max }) {
 
       {/* Value */}
       <div style={{
-        fontSize: '32px',
-        fontWeight: '600',
+        fontSize: '30px',
+        fontWeight: '700',
         color: 'var(--color-text-primary)',
         fontFamily: 'var(--font-mono)',
         lineHeight: 1.1,
         letterSpacing: '-0.5px',
         display: 'flex',
         alignItems: 'baseline',
-        gap: '5px',
+        gap: '4px',
       }}>
         {displayValue}
         {unit && (
           <span style={{
-            fontSize: '14px',
+            fontSize: '13px',
             fontWeight: '400',
             color: 'var(--color-text-secondary)',
             fontFamily: 'var(--font-sans)',
@@ -78,24 +91,28 @@ export default function MetricCard({ label, value, unit, status, min, max }) {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingTop: 'var(--space-xs)',
+        paddingTop: '8px',
         marginTop: 'auto',
         borderTop: '1px solid var(--color-border)',
       }}>
         <span style={{
-          fontSize: '13px',
+          fontSize: '12px',
           fontWeight: '600',
-          color: isSafe ? 'var(--color-safe)' : 'var(--color-risk)',
+          color: accentColor,
           display: 'flex',
           alignItems: 'center',
           gap: '4px',
         }}>
-          {isSafe ? '✓' : '⚠'} {isSafe ? 'Safe' : 'Unsafe'}
+          <span style={{
+            width: '6px', height: '6px', borderRadius: '50%',
+            backgroundColor: accentColor, display: 'inline-block',
+          }} />
+          {isSafe ? 'Safe' : 'Unsafe'}
         </span>
 
         {rangeText && (
           <span style={{
-            fontSize: '11px',
+            fontSize: '10px',
             color: 'var(--color-text-secondary)',
             fontFamily: 'var(--font-mono)',
           }}>
